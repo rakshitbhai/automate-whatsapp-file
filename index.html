@@ -1,0 +1,511 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Automation Tool</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #25D366;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #128C7E;
+        }
+
+        .btn-primary:disabled {
+            background-color: #88E2A7;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e5e5;
+        }
+
+        .btn-danger {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background-color: #e60000;
+        }
+
+        .btn-danger:disabled {
+            background-color: #ffb3b3;
+            cursor: not-allowed;
+        }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 0.25rem;
+        }
+
+        .status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .status-connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-loading {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .log-container {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 0.5rem;
+            font-family: monospace;
+            background-color: #f8f9fa;
+        }
+
+        .log-entry {
+            margin: 0.25rem 0;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .header-logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .header-logo h1 {
+            font-size: 1.5rem;
+            color: #128C7E;
+            margin: 0;
+        }
+
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: #128C7E;
+            display: inline-block;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .textarea-control {
+            resize: vertical;
+            min-height: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp Logo">
+            <h1>WhatsApp Automation Tool</h1>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">1. Connect to WhatsApp</h2>
+            <div id="connection-status" class="mb-4">
+                <span class="status status-disconnected">Disconnected</span>
+            </div>
+
+            <div id="qr-container" class="qr-container hidden">
+                <div id="qrcode"></div>
+            </div>
+
+            <div class="flex space-x-2">
+                <button id="connect-btn" class="btn btn-primary">
+                    <span>Connect WhatsApp</span>
+                </button>
+                <button id="logout-btn" class="btn btn-danger hidden">Logout</button>
+                <div id="loading-indicator" class="hidden">
+                    <div class="spinner"></div> Connecting...
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">2. Configure Settings</h2>
+
+            <div class="mb-4">
+                <label class="font-medium">Output Folder to Watch</label>
+                <div class="flex mt-1">
+                    <input type="text" id="folder-path" class="form-control flex-grow"
+                        placeholder="Select a folder to watch..." disabled>
+                    <button id="select-folder-btn" class="btn btn-secondary ml-2" disabled>Browse</button>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="font-medium">Select WhatsApp Recipient</label>
+                <select id="chat-select" class="form-control mt-1" disabled>
+                    <option value="">-- Select a chat --</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="font-medium">Caption for Documents</label>
+                <textarea id="caption-input" class="form-control textarea-control mt-1"
+                    placeholder="Enter caption for documents (optional)" disabled></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="flex items-center font-medium">
+                    <input type="checkbox" id="shutdown-checkbox" class="mr-2" disabled>
+                    Shutdown PC after sending file
+                </label>
+                <p class="text-sm text-gray-600 mt-1">When enabled, the system will shutdown after sending the file</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">3. Control</h2>
+            <div class="flex space-x-2">
+                <button id="start-btn" class="btn btn-primary" disabled>Start Watching</button>
+                <button id="stop-btn" class="btn btn-danger" disabled>Stop Watching</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">Logs</h2>
+            <div id="log-container" class="log-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Renderer process
+        const { ipcRenderer } = require('electron');
+
+        // Elements
+        const connectBtn = document.getElementById('connect-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const selectFolderBtn = document.getElementById('select-folder-btn');
+        const folderPathInput = document.getElementById('folder-path');
+        const chatSelect = document.getElementById('chat-select');
+        const captionInput = document.getElementById('caption-input');
+        const shutdownCheckbox = document.getElementById('shutdown-checkbox');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const connectionStatus = document.getElementById('connection-status');
+        const qrContainer = document.getElementById('qr-container');
+        const logContainer = document.getElementById('log-container');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        // Variables
+        let isConnected = false;
+        let selectedFolder = '';
+        let selectedChat = '';
+        let isWatching = false;
+
+        // Functions
+        function updateStatus(status) {
+
+            if (status === 'connected') {
+                isConnected = true;
+                connectionStatus.innerHTML = '<span class="status status-connected">Connected</span>';
+                qrContainer.classList.add('hidden');
+                connectBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                loadingIndicator.classList.add('hidden');
+                selectFolderBtn.disabled = false;
+                folderPathInput.disabled = false;
+                chatSelect.disabled = false;
+                captionInput.disabled = false;
+                shutdownCheckbox.disabled = false;
+            } else if (status === 'disconnected') {
+                isConnected = false;
+                connectionStatus.innerHTML = '<span class="status status-disconnected">Disconnected</span>';
+                connectBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                qrContainer.classList.add('hidden');
+                loadingIndicator.classList.add('hidden');
+                selectFolderBtn.disabled = true;
+                folderPathInput.disabled = true;
+                chatSelect.disabled = true;
+                captionInput.disabled = true;
+                shutdownCheckbox.disabled = true;
+                startBtn.disabled = true;
+                stopBtn.disabled = true;
+            } else if (status === 'loading') {
+                connectionStatus.innerHTML = '<span class="status status-loading">Connecting...</span>';
+                connectBtn.classList.add('hidden');
+                loadingIndicator.classList.remove('hidden');
+            }
+        }
+
+        function addLog(message) {
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function updateButtonState() {
+            const canStart = isConnected && selectedFolder && selectedChat && !isWatching;
+            const canStop = isConnected && isWatching;
+
+            startBtn.disabled = !canStart;
+            stopBtn.disabled = !canStop;
+        }
+
+        // Event listeners
+        connectBtn.addEventListener('click', () => {
+            addLog('Initializing WhatsApp...');
+            ipcRenderer.send('init-whatsapp');
+            updateStatus('loading');
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            ipcRenderer.send('logout-whatsapp');
+            addLog('Logging out of WhatsApp...');
+        });
+
+        selectFolderBtn.addEventListener('click', async () => {
+            const folder = await ipcRenderer.invoke('select-folder');
+            if (folder) {
+                selectedFolder = folder;
+                folderPathInput.value = folder;
+                addLog(`Selected folder: ${folder}`);
+                updateButtonState();
+            }
+        });
+
+        chatSelect.addEventListener('change', (e) => {
+            selectedChat = e.target.value;
+            if (selectedChat) {
+                addLog(`Selected chat: ${chatSelect.options[chatSelect.selectedIndex].text}`);
+            }
+            updateButtonState();
+        });
+
+        captionInput.addEventListener('input', () => {
+            ipcRenderer.send('update-caption', captionInput.value);
+            updateButtonState();
+        });
+        shutdownCheckbox.addEventListener('change', () => {
+            ipcRenderer.send('toggle-shutdown', shutdownCheckbox.checked);
+        });
+        startBtn.addEventListener('click', () => {
+            if (!selectedFolder || !selectedChat) {
+                addLog('Error: Please select a folder and a chat first');
+                return;
+            }
+
+            ipcRenderer.send('start-watching', {
+                folderPath: selectedFolder,
+                chatId: selectedChat,
+            });
+
+            isWatching = true;
+            if (isWatching) {
+                selectFolderBtn.disabled = true;
+                folderPathInput.disabled = true;
+                chatSelect.disabled = true;
+                logoutBtn.disabled = true;
+
+
+            }
+            updateButtonState();
+            addLog('Watching started');
+        });
+
+        stopBtn.addEventListener('click', () => {
+            ipcRenderer.send('stop-watching');
+            isWatching = false;
+            if (!isWatching) {
+                selectFolderBtn.disabled = false;
+                folderPathInput.disabled = false;
+                chatSelect.disabled = false;
+                logoutBtn.disabled = false;
+            }
+            updateButtonState();
+            addLog('Watching stopped');
+        });
+
+        // IPC listeners
+        ipcRenderer.on('whatsapp-qr', (event, qr) => {
+            addLog('WhatsApp QR code received. Please scan with your phone');
+            qrContainer.classList.remove('hidden');
+
+            // Clear previous QR code
+            document.getElementById('qrcode').innerHTML = '';
+
+            // Generate new QR code
+            new QRCode(document.getElementById('qrcode'), {
+                text: qr,
+                width: 200,
+                height: 200
+            });
+        });
+
+        ipcRenderer.on('whatsapp-loading', (event, isLoading) => {
+            if (isLoading) {
+                loadingIndicator.classList.remove('hidden');
+                connectBtn.classList.add('hidden');
+            } else {
+                loadingIndicator.classList.add('hidden');
+            }
+        });
+
+        ipcRenderer.on('whatsapp-ready', () => {
+            addLog('WhatsApp client is ready!');
+            updateStatus('connected');
+        });
+
+        ipcRenderer.on('whatsapp-authenticated', () => {
+            addLog('WhatsApp authenticated');
+            updateStatus('connected');
+        });
+
+        ipcRenderer.on('whatsapp-auth-failure', () => {
+            addLog('WhatsApp authentication failed');
+            updateStatus('disconnected');
+        });
+
+        ipcRenderer.on('whatsapp-disconnected', () => {
+            addLog('WhatsApp disconnected');
+            updateStatus('disconnected');
+            isWatching = false;
+        });
+
+        ipcRenderer.on('whatsapp-chats', (event, chats) => {
+            // Clear previous options
+            while (chatSelect.options.length > 1) {
+                chatSelect.remove(1);
+            }
+            addLog(`Loading chats...`);
+            // Group chats by type
+            const groups = chats.filter(chat => chat.isGroup);
+            const contacts = chats.filter(chat => !chat.isGroup);
+
+            // Add groups first
+            if (groups.length > 0) {
+                const groupOptgroup = document.createElement('optgroup');
+                groupOptgroup.label = 'Groups';
+
+                groups.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group.id;
+                    option.textContent = group.name;
+                    groupOptgroup.appendChild(option);
+                });
+
+                chatSelect.appendChild(groupOptgroup);
+            }
+
+            // Add contacts
+            if (contacts.length > 0) {
+                const contactsOptgroup = document.createElement('optgroup');
+                contactsOptgroup.label = 'Contacts';
+
+                contacts.forEach(contact => {
+                    const option = document.createElement('option');
+                    option.value = contact.id;
+                    option.textContent = contact.name;
+                    contactsOptgroup.appendChild(option);
+                });
+
+                chatSelect.appendChild(contactsOptgroup);
+            }
+
+            addLog(`Loaded ${chats.length} chats`);
+        });
+
+        ipcRenderer.on('log', (event, message) => {
+            addLog(message);
+        });
+
+        ipcRenderer.on('error', (event, message) => {
+            addLog(`ERROR: ${message}`);
+        });
+
+        // Initialize
+        updateStatus('disconnected');
+        addLog('Application started');
+    </script>
+</body>
+
+</html>

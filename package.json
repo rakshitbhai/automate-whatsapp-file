@@ -1,18 +1,62 @@
 {
-  "name": "automate",
+  "name": "whatsapp-automation-tool",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "WhatsApp Automation Tool for sending files automatically",
+  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "whatsapp",
+    "automation",
+    "electron"
+  ],
+  "author": "Rishabh Shukla",
+  "license": "MIT",
   "dependencies": {
-    "@wppconnect-team/wppconnect": "^1.36.4",
-    "chokidar": "^4.0.3",
+    "chokidar": "^3.5.3",
     "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.27.0"
+    "whatsapp-web.js": "^1.22.1"
+  },
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.yourname.whatsapp-automation",
+    "productName": "WhatsApp Automation Tool",
+    "directories": {
+      "output": "dist"
+    },
+    "extraResources": [
+      {
+        "from": "node_modules/puppeteer/.local-chromium",
+        "to": "puppeteer/.local-chromium",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
   }
 }
