@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -175,6 +174,446 @@
             resize: vertical;
             min-height: 60px;
         }
+
+        /* Custom dropdown with search */
+        .custom-select-container {
+            position: relative;
+        }
+
+        .search-input {
+            padding-right: 30px;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+
+        .chat-dropdown {
+            position: absolute;
+            width: 100%;
+            max-height: 250px;
+            overflow-y: auto;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-category {
+            padding: 5px 10px;
+            font-weight: bold;
+            background-color: #f6f6f6;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .chat-option {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .chat-option:hover {
+            background-color: #f1f1f1;
+        }
+
+        .chat-option.active {
+            background-color: #e6f7ff;
+        }
+
+        .no-results {
+            padding: 10px;
+            text-align: center;
+            color: #888;
+        }
+
+        /* Engine Animation Styles */
+        .engine-animation {
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .engine-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .engine-body {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 80px;
+            height: 80px;
+            background-color: #2563eb;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+
+        .engine-core {
+            width: 50px;
+            height: 50px;
+            background-color: #1e40af;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .engine-rotor {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            animation: rotateSlow 1s linear infinite;
+            animation-play-state: paused;
+        }
+
+        .transfer-active .engine-rotor {
+            animation-play-state: running;
+        }
+
+        .transfer-starting .engine-rotor {
+            animation-duration: 3s;
+        }
+
+        .transfer-progress .engine-rotor {
+            animation-duration: 0.5s;
+        }
+
+        .transfer-completing .engine-rotor {
+            animation-duration: 2s;
+        }
+
+        .rotor-blade {
+            position: absolute;
+            width: 8px;
+            height: 30px;
+            background-color: #dbeafe;
+            top: 5px;
+            left: 16px;
+            border-radius: 4px;
+            transform-origin: 50% 15px;
+        }
+
+        .rotor-blade:nth-child(2) {
+            transform: rotate(90deg);
+        }
+
+        .rotor-blade:nth-child(3) {
+            transform: rotate(180deg);
+        }
+
+        .rotor-blade:nth-child(4) {
+            transform: rotate(270deg);
+        }
+
+        .engine-particles-container {
+            position: absolute;
+            bottom: -20px;
+            width: 80px;
+            height: 40px;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .engine-particles {
+            width: 80px;
+            height: 40px;
+            background: radial-gradient(ellipse at top, rgba(96, 165, 250, 0.6), transparent 70%);
+            animation: pulse 2s infinite;
+            animation-play-state: paused;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .transfer-active .engine-particles {
+            animation-play-state: running;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        /* Progress bar gradient animation */
+        .progress-gradient {
+            background: linear-gradient(90deg, #3b82f6, #2563eb, #1d4ed8);
+            background-size: 200% 100%;
+            animation: gradientShift 2s ease-in-out infinite;
+        }
+
+        /* Success animation styles */
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            margin-bottom: 15px;
+        }
+
+        .check-icon {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            border-radius: 50%;
+            box-sizing: content-box;
+            border: 4px solid #4ade80;
+        }
+
+        .check-icon::before {
+            top: 3px;
+            left: -2px;
+            width: 30px;
+            transform-origin: 100% 50%;
+            border-radius: 100px 0 0 100px;
+        }
+
+        .check-icon::after {
+            top: 0;
+            left: 30px;
+            width: 60px;
+            transform-origin: 0 50%;
+            border-radius: 0 100px 100px 0;
+            animation: rotate-circle 4.25s ease-in;
+        }
+
+        .check-icon::before,
+        .check-icon::after {
+            content: '';
+            height: 100px;
+            position: absolute;
+            background: #FFFFFF;
+            transform: rotate(-45deg);
+        }
+
+        .icon-line {
+            height: 5px;
+            background-color: #4ade80;
+            display: block;
+            border-radius: 2px;
+            position: absolute;
+            z-index: 10;
+        }
+
+        .icon-line.line-tip {
+            top: 46px;
+            left: 14px;
+            width: 25px;
+            transform: rotate(45deg);
+            animation: icon-line-tip 0.75s;
+        }
+
+        .icon-line.line-long {
+            top: 38px;
+            right: 8px;
+            width: 47px;
+            transform: rotate(-45deg);
+            animation: icon-line-long 0.75s;
+        }
+
+        .icon-circle {
+            top: -4px;
+            left: -4px;
+            z-index: 10;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            position: absolute;
+            box-sizing: content-box;
+            border: 4px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .icon-fix {
+            top: 8px;
+            width: 5px;
+            left: 26px;
+            z-index: 1;
+            height: 85px;
+            position: absolute;
+            transform: rotate(-45deg);
+            background-color: #FFFFFF;
+        }
+
+        /* Error animation styles */
+        .error-x-mark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            margin-bottom: 15px;
+        }
+
+        .x-icon {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            border-radius: 50%;
+            box-sizing: content-box;
+            border: 4px solid #f87171;
+        }
+
+        .icon-line.line-left {
+            top: 37px;
+            left: 18px;
+            width: 45px;
+            transform: rotate(45deg);
+            animation: icon-line-left 0.75s;
+        }
+
+        .icon-line.line-right {
+            top: 37px;
+            right: 19px;
+            width: 45px;
+            transform: rotate(-45deg);
+            animation: icon-line-right 0.75s;
+        }
+
+        /* Animations */
+        @keyframes rotateSlow {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes icon-line-tip {
+            0% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+
+            54% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+
+            70% {
+                width: 50px;
+                left: -8px;
+                top: 37px;
+            }
+
+            84% {
+                width: 17px;
+                left: 21px;
+                top: 48px;
+            }
+
+            100% {
+                width: 25px;
+                left: 14px;
+                top: 45px;
+            }
+        }
+
+        @keyframes icon-line-long {
+            0% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+
+            65% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+
+            84% {
+                width: 55px;
+                right: 0px;
+                top: 35px;
+            }
+
+            100% {
+                width: 47px;
+                right: 8px;
+                top: 38px;
+            }
+        }
+
+        @keyframes icon-line-left {
+            0% {
+                width: 0;
+                left: 40px;
+            }
+
+            100% {
+                width: 45px;
+                left: 18px;
+            }
+        }
+
+        @keyframes icon-line-right {
+            0% {
+                width: 0;
+                right: 40px;
+            }
+
+            100% {
+                width: 45px;
+                right: 18px;
+            }
+        }
+
+        /* Transition classes */
+        .transfer-active {
+            transition: all 0.5s ease-in-out;
+        }
+
+        .transfer-starting {
+            transition: all 1s ease-in;
+        }
+
+        .transfer-progress {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .transfer-completing {
+            transition: all 1s ease-out;
+        }
     </style>
 </head>
 
@@ -220,9 +659,24 @@
 
             <div class="mb-4">
                 <label class="font-medium">Select WhatsApp Recipient</label>
-                <select id="chat-select" class="form-control mt-1" disabled>
-                    <option value="">-- Select a chat --</option>
-                </select>
+                <div class="custom-select-container mt-1">
+                    <input type="text" id="chat-search" class="form-control search-input"
+                        placeholder="Search for a chat..." disabled>
+                    <div class="search-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </div>
+                    <div id="chat-dropdown" class="chat-dropdown hidden"></div>
+                    <input type="hidden" id="selected-chat-id" value="">
+                    <div id="selected-chat-display" class="mt-2 text-gray-700"></div>
+                    <div id="chats-loading-indicator" class="mt-2 text-blue-600 hidden">
+                        <div class="spinner inline-block"></div>
+                        <span>Loading chats...</span>
+                    </div>
+                </div>
             </div>
 
             <div class="mb-4">
@@ -249,6 +703,105 @@
         </div>
 
         <div class="card">
+            <h2 class="text-xl font-bold mb-4">File Transfer Status</h2>
+            <div id="transfer-container" class="hidden">
+                <div class="mb-3 flex justify-between items-center">
+                    <span class="font-medium text-blue-700 text-lg" id="current-file">No active transfer</span>
+                    <span class="text-gray-500 text-sm" id="file-size-display"></span>
+                </div>
+
+                <!-- Engine animation container -->
+                <div class="engine-animation mb-4">
+                    <div class="engine-container">
+                        <div class="engine-body">
+                            <div class="engine-core">
+                                <div class="engine-rotor">
+                                    <div class="rotor-blade"></div>
+                                    <div class="rotor-blade"></div>
+                                    <div class="rotor-blade"></div>
+                                    <div class="rotor-blade"></div>
+                                </div>
+                            </div>
+                            <div class="engine-particles-container">
+                                <div class="engine-particles"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress bar with enhanced styling -->
+                <div class="relative pt-1">
+                    <div class="flex mb-2 items-center justify-between">
+                        <div>
+                            <span id="progress-status"
+                                class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">
+                                Initializing...
+                            </span>
+                        </div>
+                        <div class="text-right">
+                            <span id="progress-text" class="text-xs font-semibold inline-block text-blue-600">0%</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 overflow-hidden">
+                        <div id="progress-bar" class="progress-gradient rounded-full h-2" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span id="elapsed-time">Elapsed: 0s</span>
+                        <span id="transfer-speed">0 MB/s</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 rounded-md bg-gray-50 border border-gray-200" id="transfer-details">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Transfer Details</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                        <div>Destination:</div>
+                        <div id="transfer-destination" class="truncate">-</div>
+                        <div>File type:</div>
+                        <div id="transfer-file-type">-</div>
+                        <div>ETA:</div>
+                        <div id="transfer-eta">Calculating...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success animation container -->
+            <div id="confirmation-container" class="hidden mt-3">
+                <div class="success-checkmark">
+                    <div class="check-icon">
+                        <span class="icon-line line-tip"></span>
+                        <span class="icon-line line-long"></span>
+                        <div class="icon-circle"></div>
+                        <div class="icon-fix"></div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="font-medium text-green-700 text-lg" id="confirm-message">File sent successfully!</div>
+                    <div class="text-sm text-green-600" id="confirm-details"></div>
+                    <div class="text-xs text-gray-500 mt-2" id="confirm-stats"></div>
+                </div>
+            </div>
+
+            <!-- Error animation container -->
+            <div id="error-container" class="hidden mt-3">
+                <div class="error-x-mark">
+                    <div class="x-icon">
+                        <span class="icon-line line-left"></span>
+                        <span class="icon-line line-right"></span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="font-medium text-red-700" id="error-message">Transfer failed</div>
+                    <div class="text-sm text-red-600" id="error-details"></div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
             <h2 class="text-xl font-bold mb-4">Logs</h2>
             <div id="log-container" class="log-container"></div>
         </div>
@@ -263,7 +816,10 @@
         const logoutBtn = document.getElementById('logout-btn');
         const selectFolderBtn = document.getElementById('select-folder-btn');
         const folderPathInput = document.getElementById('folder-path');
-        const chatSelect = document.getElementById('chat-select');
+        const chatSearch = document.getElementById('chat-search');
+        const chatDropdown = document.getElementById('chat-dropdown');
+        const selectedChatId = document.getElementById('selected-chat-id');
+        const selectedChatDisplay = document.getElementById('selected-chat-display');
         const captionInput = document.getElementById('caption-input');
         const shutdownCheckbox = document.getElementById('shutdown-checkbox');
         const startBtn = document.getElementById('start-btn');
@@ -272,16 +828,38 @@
         const qrContainer = document.getElementById('qr-container');
         const logContainer = document.getElementById('log-container');
         const loadingIndicator = document.getElementById('loading-indicator');
+        const chatsLoadingIndicator = document.getElementById('chats-loading-indicator');
+
+        // Progress tracking elements
+        const transferContainer = document.getElementById('transfer-container');
+        const currentFile = document.getElementById('current-file');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const elapsedTime = document.getElementById('elapsed-time');
+        const transferStatus = document.getElementById('progress-status');
+        const transferSpeed = document.getElementById('transfer-speed');
+        const transferDetails = document.getElementById('transfer-details');
+        const transferDestination = document.getElementById('transfer-destination');
+        const transferFileType = document.getElementById('transfer-file-type');
+        const transferEta = document.getElementById('transfer-eta');
+        const confirmationContainer = document.getElementById('confirmation-container');
+        const confirmMessage = document.getElementById('confirm-message');
+        const confirmDetails = document.getElementById('confirm-details');
+        const confirmStats = document.getElementById('confirm-stats');
+        const errorContainer = document.getElementById('error-container');
+        const errorMessage = document.getElementById('error-message');
+        const errorDetails = document.getElementById('error-details');
 
         // Variables
         let isConnected = false;
         let selectedFolder = '';
         let selectedChat = '';
         let isWatching = false;
+        let allChats = [];
+        let activeTransferId = null;
 
         // Functions
         function updateStatus(status) {
-
             if (status === 'connected') {
                 isConnected = true;
                 connectionStatus.innerHTML = '<span class="status status-connected">Connected</span>';
@@ -291,7 +869,7 @@
                 loadingIndicator.classList.add('hidden');
                 selectFolderBtn.disabled = false;
                 folderPathInput.disabled = false;
-                chatSelect.disabled = false;
+                chatSearch.disabled = false;
                 captionInput.disabled = false;
                 shutdownCheckbox.disabled = false;
             } else if (status === 'disconnected') {
@@ -303,11 +881,13 @@
                 loadingIndicator.classList.add('hidden');
                 selectFolderBtn.disabled = true;
                 folderPathInput.disabled = true;
-                chatSelect.disabled = true;
+                chatSearch.disabled = true;
                 captionInput.disabled = true;
                 shutdownCheckbox.disabled = true;
                 startBtn.disabled = true;
                 stopBtn.disabled = true;
+                selectedChatDisplay.textContent = '';
+                selectedChatId.value = '';
             } else if (status === 'loading') {
                 connectionStatus.innerHTML = '<span class="status status-loading">Connecting...</span>';
                 connectBtn.classList.add('hidden');
@@ -331,9 +911,218 @@
             stopBtn.disabled = !canStop;
         }
 
+        function filterChats(query) {
+            query = query.toLowerCase();
+            chatDropdown.innerHTML = '';
+
+            if (!allChats || allChats.length === 0) {
+                chatDropdown.innerHTML = '<div class="no-results">No chats available</div>';
+                return;
+            }
+
+            const groups = allChats.filter(chat => chat.isGroup && chat.name.toLowerCase().includes(query));
+            const contacts = allChats.filter(chat => !chat.isGroup && chat.name.toLowerCase().includes(query));
+
+            if (groups.length === 0 && contacts.length === 0) {
+                chatDropdown.innerHTML = '<div class="no-results">No matches found</div>';
+                return;
+            }
+
+            // Add groups
+            if (groups.length > 0) {
+                const groupCategory = document.createElement('div');
+                groupCategory.className = 'chat-category';
+                groupCategory.textContent = 'Groups';
+                chatDropdown.appendChild(groupCategory);
+
+                groups.forEach(group => {
+                    const option = document.createElement('div');
+                    option.className = 'chat-option';
+                    option.dataset.id = group.id;
+                    option.dataset.name = group.name;
+                    option.textContent = group.name;
+                    option.addEventListener('click', () => selectChat(group.id, group.name));
+                    chatDropdown.appendChild(option);
+                });
+            }
+
+            // Add contacts
+            if (contacts.length > 0) {
+                const contactCategory = document.createElement('div');
+                contactCategory.className = 'chat-category';
+                contactCategory.textContent = 'Contacts';
+                chatDropdown.appendChild(contactCategory);
+
+                contacts.forEach(contact => {
+                    const option = document.createElement('div');
+                    option.className = 'chat-option';
+                    option.dataset.id = contact.id;
+                    option.dataset.name = contact.name;
+                    option.textContent = contact.name;
+                    option.addEventListener('click', () => selectChat(contact.id, contact.name));
+                    chatDropdown.appendChild(option);
+                });
+            }
+        }
+
+        function selectChat(id, name) {
+            selectedChat = id;
+            selectedChatId.value = id;
+            selectedChatDisplay.textContent = `Selected: ${name}`;
+            chatDropdown.classList.add('hidden');
+            chatSearch.value = '';
+            addLog(`Selected chat: ${name}`);
+            updateButtonState();
+        }
+
+        // File size formatter function
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            else if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
+            else return (bytes / 1073741824).toFixed(2) + ' GB';
+        }
+
+        // Engine animation state manager
+        function updateEngineState(state, percent = 0) {
+            const engineContainer = document.querySelector('.engine-animation');
+
+            // Remove all state classes first
+            engineContainer.classList.remove(
+                'transfer-starting',
+                'transfer-progress',
+                'transfer-completing',
+                'transfer-active'
+            );
+
+            // Add appropriate class based on state
+            if (state === 'starting') {
+                engineContainer.classList.add('transfer-active', 'transfer-starting');
+            } else if (state === 'progress') {
+                engineContainer.classList.add('transfer-active', 'transfer-progress');
+            } else if (state === 'completing') {
+                engineContainer.classList.add('transfer-active', 'transfer-completing');
+            } else if (state === 'idle') {
+                // No classes - engine stopped
+            }
+
+            // Adjust rotor speed based on percentage if in progress state
+            if (state === 'progress' && percent > 0) {
+                // The higher the percentage, the faster the rotor spins
+                const rotationDuration = 1.5 - (percent / 100); // 1.5s at 0%, 0.5s at 100%
+                const rotor = document.querySelector('.engine-rotor');
+                if (rotor) {
+                    rotor.style.animationDuration = `${Math.max(0.5, rotationDuration)}s`;
+                }
+            }
+        }
+
+        // New and improved upload progress handler
+        ipcRenderer.on('upload-progress', (event, data) => {
+            // Show transfer container - THIS IS WHEN THE ENGINE ANIMATION BECOMES VISIBLE
+            transferContainer.classList.remove('hidden');
+            confirmationContainer.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+
+            // Display file size
+            document.getElementById('file-size-display').textContent = data.fileSize || '';
+
+            // Update current file name
+            currentFile.textContent = `Sending: ${data.file}`;
+
+            // Update progress bar
+            const progressPercent = typeof data.progress === 'number' ? data.progress : parseInt(data.progress, 10);
+            progressBar.style.width = `${progressPercent}%`;
+            progressText.textContent = `${progressPercent}%`;
+
+            // Update elapsed time
+            elapsedTime.textContent = `Elapsed: ${data.elapsed}s`;
+
+            // Update transfer speed
+            transferSpeed.textContent = `${data.speed} MB/s`;
+
+            // Update transfer details
+            transferDestination.textContent = data.destination || '-';
+            transferFileType.textContent = data.fileType || '-';
+            transferEta.textContent = data.eta || 'Calculating...';
+
+            // Update engine animation state based on progress
+            if (progressPercent < 10) {
+                updateEngineState('starting');
+                transferStatus.textContent = 'STARTING ENGINE...';
+                transferStatus.className = 'text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-600 bg-yellow-100';
+            } else if (progressPercent < 90) {
+                updateEngineState('progress', progressPercent);
+                transferStatus.textContent = 'TRANSFERRING...';
+                transferStatus.className = 'text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100';
+            } else {
+                updateEngineState('completing');
+                transferStatus.textContent = 'FINALIZING...';
+                transferStatus.className = 'text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-600 bg-green-100';
+            }
+
+            // Store the active transfer ID
+            activeTransferId = data.transferId;
+        });
+
+        // Enhanced file sent confirmation
+        ipcRenderer.on('file-sent-confirmed', (event, data) => {
+            // Only show confirmation if it's for the active transfer
+            if (activeTransferId === data.transferId) {
+                // First stop the engine animation
+                updateEngineState('idle');
+
+                // Hide transfer progress after a short delay to show the engine stopping
+                setTimeout(() => {
+                    transferContainer.classList.add('hidden');
+                    confirmationContainer.classList.remove('hidden');
+                    errorContainer.classList.add('hidden');
+
+                    // Update confirmation message
+                    confirmMessage.textContent = `File sent successfully: ${data.file}`;
+
+                    // Add status details
+                    let statusText = 'Delivered to server';
+                    if (data.status === 3) statusText = 'Delivered to recipient';
+                    if (data.status === 4) statusText = 'Read by recipient';
+
+                    confirmDetails.textContent = `${statusText}`;
+
+                    // Add stats
+                    confirmStats.textContent = `Transfer completed in ${data.elapsed}s | Average speed: ${data.speed} MB/s`;
+
+                    // Add log entry
+                    addLog(`✅ File transfer completed successfully: ${data.file}`);
+                    activeTransferId = null;
+                }, 1500);
+            }
+        });
+
+        // Enhanced file send failure
+        ipcRenderer.on('file-send-failed', (event, data) => {
+            // First stop the engine animation
+            updateEngineState('idle');
+
+            setTimeout(() => {
+                transferContainer.classList.add('hidden');
+                confirmationContainer.classList.add('hidden');
+                errorContainer.classList.remove('hidden');
+
+                // Update error message
+                errorMessage.textContent = `Transfer failed: ${data.file}`;
+                errorDetails.textContent = `Error: ${data.error}`;
+
+                // Add log entry
+                addLog(`❌ File transfer failed: ${data.file} - ${data.error}`);
+                activeTransferId = null;
+            }, 1000);
+        });
+
         // Event listeners
         connectBtn.addEventListener('click', () => {
             addLog('Initializing WhatsApp...');
+            // Clear existing auth data to force QR code generation
+            ipcRenderer.send('reset-auth-data');
             ipcRenderer.send('init-whatsapp');
             updateStatus('loading');
         });
@@ -353,21 +1142,32 @@
             }
         });
 
-        chatSelect.addEventListener('change', (e) => {
-            selectedChat = e.target.value;
-            if (selectedChat) {
-                addLog(`Selected chat: ${chatSelect.options[chatSelect.selectedIndex].text}`);
+        chatSearch.addEventListener('focus', () => {
+            filterChats(chatSearch.value);
+            chatDropdown.classList.remove('hidden');
+        });
+
+        // Handle clicks outside the dropdown
+        document.addEventListener('click', (e) => {
+            if (!chatDropdown.contains(e.target) && e.target !== chatSearch) {
+                chatDropdown.classList.add('hidden');
             }
-            updateButtonState();
+        });
+
+        chatSearch.addEventListener('input', () => {
+            filterChats(chatSearch.value);
+            chatDropdown.classList.remove('hidden');
         });
 
         captionInput.addEventListener('input', () => {
             ipcRenderer.send('update-caption', captionInput.value);
             updateButtonState();
         });
+
         shutdownCheckbox.addEventListener('change', () => {
             ipcRenderer.send('toggle-shutdown', shutdownCheckbox.checked);
         });
+
         startBtn.addEventListener('click', () => {
             if (!selectedFolder || !selectedChat) {
                 addLog('Error: Please select a folder and a chat first');
@@ -383,10 +1183,8 @@
             if (isWatching) {
                 selectFolderBtn.disabled = true;
                 folderPathInput.disabled = true;
-                chatSelect.disabled = true;
+                chatSearch.disabled = true;
                 logoutBtn.disabled = true;
-
-
             }
             updateButtonState();
             addLog('Watching started');
@@ -398,7 +1196,7 @@
             if (!isWatching) {
                 selectFolderBtn.disabled = false;
                 folderPathInput.disabled = false;
-                chatSelect.disabled = false;
+                chatSearch.disabled = false;
                 logoutBtn.disabled = false;
             }
             updateButtonState();
@@ -433,6 +1231,8 @@
         ipcRenderer.on('whatsapp-ready', () => {
             addLog('WhatsApp client is ready!');
             updateStatus('connected');
+            // Show chat loading indicator when connection is established
+            chatsLoadingIndicator.classList.remove('hidden');
         });
 
         ipcRenderer.on('whatsapp-authenticated', () => {
@@ -452,46 +1252,17 @@
         });
 
         ipcRenderer.on('whatsapp-chats', (event, chats) => {
-            // Clear previous options
-            while (chatSelect.options.length > 1) {
-                chatSelect.remove(1);
-            }
-            addLog(`Loading chats...`);
-            // Group chats by type
-            const groups = chats.filter(chat => chat.isGroup);
-            const contacts = chats.filter(chat => !chat.isGroup);
-
-            // Add groups first
-            if (groups.length > 0) {
-                const groupOptgroup = document.createElement('optgroup');
-                groupOptgroup.label = 'Groups';
-
-                groups.forEach(group => {
-                    const option = document.createElement('option');
-                    option.value = group.id;
-                    option.textContent = group.name;
-                    groupOptgroup.appendChild(option);
-                });
-
-                chatSelect.appendChild(groupOptgroup);
-            }
-
-            // Add contacts
-            if (contacts.length > 0) {
-                const contactsOptgroup = document.createElement('optgroup');
-                contactsOptgroup.label = 'Contacts';
-
-                contacts.forEach(contact => {
-                    const option = document.createElement('option');
-                    option.value = contact.id;
-                    option.textContent = contact.name;
-                    contactsOptgroup.appendChild(option);
-                });
-
-                chatSelect.appendChild(contactsOptgroup);
-            }
-
+            allChats = chats;
             addLog(`Loaded ${chats.length} chats`);
+            chatsLoadingIndicator.classList.add('hidden');
+        });
+
+        ipcRenderer.on('chats-loading', (event, isLoading) => {
+            if (isLoading) {
+                chatsLoadingIndicator.classList.remove('hidden');
+            } else {
+                chatsLoadingIndicator.classList.add('hidden');
+            }
         });
 
         ipcRenderer.on('log', (event, message) => {
@@ -505,6 +1276,7 @@
         // Initialize
         updateStatus('disconnected');
         addLog('Application started');
+        chatsLoadingIndicator.classList.remove('hidden');
     </script>
 </body>
 
