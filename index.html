@@ -4,661 +4,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Automation Tool</title>
+    <title>Chatrik</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="styles/styles.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-
-        .card {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background-color: #25D366;
-            color: white;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background-color: #128C7E;
-        }
-
-        .btn-primary:disabled {
-            background-color: #88E2A7;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background-color: #f1f1f1;
-            border: 1px solid #ddd;
-        }
-
-        .btn-secondary:hover {
-            background-color: #e5e5e5;
-        }
-
-        .btn-danger {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-        }
-
-        .btn-danger:hover {
-            background-color: #e60000;
-        }
-
-        .btn-danger:disabled {
-            background-color: #ffb3b3;
-            cursor: not-allowed;
-        }
-
-        .form-control {
-            display: block;
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-top: 0.25rem;
-        }
-
-        .status {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.875rem;
-        }
-
-        .status-connected {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .status-disconnected {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-loading {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .log-container {
-            height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 0.5rem;
-            font-family: monospace;
-            background-color: #f8f9fa;
-        }
-
-        .log-entry {
-            margin: 0.25rem 0;
-            padding: 0.25rem 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .header-logo {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .header-logo img {
-            height: 40px;
-            margin-right: 10px;
-        }
-
-        .header-logo h1 {
-            font-size: 1.5rem;
-            color: #128C7E;
-            margin: 0;
-        }
-
-        .qr-container {
-            display: flex;
-            justify-content: center;
-            margin: 1rem 0;
-        }
-
-        /* Loading spinner */
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border-left-color: #128C7E;
-            display: inline-block;
-            animation: spin 1s linear infinite;
-            vertical-align: middle;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .textarea-control {
-            resize: vertical;
-            min-height: 60px;
-        }
-
-        /* Custom dropdown with search */
-        .custom-select-container {
-            position: relative;
-        }
-
-        .search-input {
-            padding-right: 30px;
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #888;
-        }
-
-        .chat-dropdown {
-            position: absolute;
-            width: 100%;
-            max-height: 250px;
-            overflow-y: auto;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            z-index: 100;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .chat-category {
-            padding: 5px 10px;
-            font-weight: bold;
-            background-color: #f6f6f6;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .chat-option {
-            padding: 8px 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-
-        .chat-option:hover {
-            background-color: #f1f1f1;
-        }
-
-        .chat-option.active {
-            background-color: #e6f7ff;
-        }
-
-        .no-results {
-            padding: 10px;
-            text-align: center;
-            color: #888;
-        }
-
-        /* Engine Animation Styles */
-        .engine-animation {
-            height: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .engine-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-        }
-
-        .engine-body {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 80px;
-            height: 80px;
-            background-color: #2563eb;
-            border-radius: 50%;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1;
-        }
-
-        .engine-core {
-            width: 50px;
-            height: 50px;
-            background-color: #1e40af;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .engine-rotor {
-            width: 40px;
-            height: 40px;
-            position: relative;
-            animation: rotateSlow 1s linear infinite;
-            animation-play-state: paused;
-        }
-
-        .transfer-active .engine-rotor {
-            animation-play-state: running;
-        }
-
-        .transfer-starting .engine-rotor {
-            animation-duration: 3s;
-        }
-
-        .transfer-progress .engine-rotor {
-            animation-duration: 0.5s;
-        }
-
-        .transfer-completing .engine-rotor {
-            animation-duration: 2s;
-        }
-
-        .rotor-blade {
-            position: absolute;
-            width: 8px;
-            height: 30px;
-            background-color: #dbeafe;
-            top: 5px;
-            left: 16px;
-            border-radius: 4px;
-            transform-origin: 50% 15px;
-        }
-
-        .rotor-blade:nth-child(2) {
-            transform: rotate(90deg);
-        }
-
-        .rotor-blade:nth-child(3) {
-            transform: rotate(180deg);
-        }
-
-        .rotor-blade:nth-child(4) {
-            transform: rotate(270deg);
-        }
-
-        .engine-particles-container {
-            position: absolute;
-            bottom: -20px;
-            width: 80px;
-            height: 40px;
-            overflow: hidden;
-            z-index: -1;
-        }
-
-        .engine-particles {
-            width: 80px;
-            height: 40px;
-            background: radial-gradient(ellipse at top, rgba(96, 165, 250, 0.6), transparent 70%);
-            animation: pulse 2s infinite;
-            animation-play-state: paused;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        .transfer-active .engine-particles {
-            animation-play-state: running;
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 0.5s, transform 0.5s;
-        }
-
-        /* Progress bar gradient animation */
-        .progress-gradient {
-            background: linear-gradient(90deg, #3b82f6, #2563eb, #1d4ed8);
-            background-size: 200% 100%;
-            animation: gradientShift 2s ease-in-out infinite;
-        }
-
-        /* Success animation styles */
-        .success-checkmark {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto;
-            margin-bottom: 15px;
-        }
-
-        .check-icon {
-            width: 80px;
-            height: 80px;
-            position: relative;
-            border-radius: 50%;
-            box-sizing: content-box;
-            border: 4px solid #4ade80;
-        }
-
-        .check-icon::before {
-            top: 3px;
-            left: -2px;
-            width: 30px;
-            transform-origin: 100% 50%;
-            border-radius: 100px 0 0 100px;
-        }
-
-        .check-icon::after {
-            top: 0;
-            left: 30px;
-            width: 60px;
-            transform-origin: 0 50%;
-            border-radius: 0 100px 100px 0;
-            animation: rotate-circle 4.25s ease-in;
-        }
-
-        .check-icon::before,
-        .check-icon::after {
-            content: '';
-            height: 100px;
-            position: absolute;
-            background: #FFFFFF;
-            transform: rotate(-45deg);
-        }
-
-        .icon-line {
-            height: 5px;
-            background-color: #4ade80;
-            display: block;
-            border-radius: 2px;
-            position: absolute;
-            z-index: 10;
-        }
-
-        .icon-line.line-tip {
-            top: 46px;
-            left: 14px;
-            width: 25px;
-            transform: rotate(45deg);
-            animation: icon-line-tip 0.75s;
-        }
-
-        .icon-line.line-long {
-            top: 38px;
-            right: 8px;
-            width: 47px;
-            transform: rotate(-45deg);
-            animation: icon-line-long 0.75s;
-        }
-
-        .icon-circle {
-            top: -4px;
-            left: -4px;
-            z-index: 10;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            position: absolute;
-            box-sizing: content-box;
-            border: 4px solid rgba(76, 175, 80, 0.5);
-        }
-
-        .icon-fix {
-            top: 8px;
-            width: 5px;
-            left: 26px;
-            z-index: 1;
-            height: 85px;
-            position: absolute;
-            transform: rotate(-45deg);
-            background-color: #FFFFFF;
-        }
-
-        /* Error animation styles */
-        .error-x-mark {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto;
-            margin-bottom: 15px;
-        }
-
-        .x-icon {
-            width: 80px;
-            height: 80px;
-            position: relative;
-            border-radius: 50%;
-            box-sizing: content-box;
-            border: 4px solid #f87171;
-        }
-
-        .icon-line.line-left {
-            top: 37px;
-            left: 18px;
-            width: 45px;
-            transform: rotate(45deg);
-            animation: icon-line-left 0.75s;
-        }
-
-        .icon-line.line-right {
-            top: 37px;
-            right: 19px;
-            width: 45px;
-            transform: rotate(-45deg);
-            animation: icon-line-right 0.75s;
-        }
-
-        /* Animations */
-        @keyframes rotateSlow {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 0.7;
-            }
-
-            50% {
-                transform: scale(1.05);
-                opacity: 0.9;
-            }
-        }
-
-        @keyframes gradientShift {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        @keyframes icon-line-tip {
-            0% {
-                width: 0;
-                left: 1px;
-                top: 19px;
-            }
-
-            54% {
-                width: 0;
-                left: 1px;
-                top: 19px;
-            }
-
-            70% {
-                width: 50px;
-                left: -8px;
-                top: 37px;
-            }
-
-            84% {
-                width: 17px;
-                left: 21px;
-                top: 48px;
-            }
-
-            100% {
-                width: 25px;
-                left: 14px;
-                top: 45px;
-            }
-        }
-
-        @keyframes icon-line-long {
-            0% {
-                width: 0;
-                right: 46px;
-                top: 54px;
-            }
-
-            65% {
-                width: 0;
-                right: 46px;
-                top: 54px;
-            }
-
-            84% {
-                width: 55px;
-                right: 0px;
-                top: 35px;
-            }
-
-            100% {
-                width: 47px;
-                right: 8px;
-                top: 38px;
-            }
-        }
-
-        @keyframes icon-line-left {
-            0% {
-                width: 0;
-                left: 40px;
-            }
-
-            100% {
-                width: 45px;
-                left: 18px;
-            }
-        }
-
-        @keyframes icon-line-right {
-            0% {
-                width: 0;
-                right: 40px;
-            }
-
-            100% {
-                width: 45px;
-                right: 18px;
-            }
-        }
-
-        /* Transition classes */
-        .transfer-active {
-            transition: all 0.5s ease-in-out;
-        }
-
-        .transfer-starting {
-            transition: all 1s ease-in;
-        }
-
-        .transfer-progress {
-            transition: all 0.3s ease-in-out;
-        }
-
-        .transfer-completing {
-            transition: all 1s ease-out;
-        }
-    </style>
 </head>
 
 <body>
     <div class="container">
         <div class="header-logo">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp Logo">
-            <h1>WhatsApp Automation Tool</h1>
+            <img src="assets/icon.png" alt="Chatrik Logo">
+            <h1>Chatrik</h1>
         </div>
 
         <div class="card">
-            <h2 class="text-xl font-bold mb-4">1. Connect to WhatsApp</h2>
+            <div class="card-header">
+                <h2 class="text-xl font-bold mb-1">1. Connect to WhatsApp</h2>
+                <p class="text-sm text-gray-500 mb-4">Scan the QR code with your WhatsApp to begin</p>
+            </div>
+
             <div id="connection-status" class="mb-4">
                 <span class="status status-disconnected">Disconnected</span>
             </div>
 
             <div id="qr-container" class="qr-container hidden">
                 <div id="qrcode"></div>
+                <p class="text-sm text-gray-600 mt-4 text-center">Open WhatsApp on your phone, tap Menu or Settings and
+                    select WhatsApp Web</p>
             </div>
 
-            <div class="flex space-x-2">
+            <div class="flex space-x-3">
                 <button id="connect-btn" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14"></path>
+                        <path d="M12 5v14"></path>
+                    </svg>
                     <span>Connect WhatsApp</span>
                 </button>
-                <button id="logout-btn" class="btn btn-danger hidden">Logout</button>
-                <div id="loading-indicator" class="hidden">
-                    <div class="spinner"></div> Connecting...
+                <button id="logout-btn" class="btn btn-danger hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+                <div id="loading-indicator" class="hidden flex items-center">
+                    <div class="spinner"></div> <span>Connecting...</span>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <h2 class="text-xl font-bold mb-4">2. Configure Settings</h2>
+            <div class="card-header">
+                <h2 class="text-xl font-bold mb-1">2. Configure Settings</h2>
+                <p class="text-sm text-gray-500 mb-4">Set up your automation preferences</p>
+            </div>
 
-            <div class="mb-4">
-                <label class="font-medium">Output Folder to Watch</label>
+            <div class="mb-6">
+                <label class="font-medium flex items-center mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="mr-2 text-blue-600">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Output Folder to Watch
+                </label>
+                <p class="text-xs text-gray-500 mb-2">Files added to this folder will be automatically sent</p>
                 <div class="flex mt-1">
                     <input type="text" id="folder-path" class="form-control flex-grow"
                         placeholder="Select a folder to watch..." disabled>
-                    <button id="select-folder-btn" class="btn btn-secondary ml-2" disabled>Browse</button>
+                    <button id="select-folder-btn" class="btn btn-secondary ml-2" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
+                            </path>
+                        </svg>
+                        Browse
+                    </button>
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label class="font-medium">Select WhatsApp Recipient</label>
+            <div class="mb-6">
+                <label class="font-medium flex items-center mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="mr-2 text-green-600">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Select WhatsApp Recipient
+                </label>
+                <p class="text-xs text-gray-500 mb-2">Choose a group to receive your files</p>
                 <div class="custom-select-container mt-1">
                     <input type="text" id="chat-search" class="form-control search-input"
                         placeholder="Search for a chat..." disabled>
@@ -671,140 +111,331 @@
                     </div>
                     <div id="chat-dropdown" class="chat-dropdown hidden"></div>
                     <input type="hidden" id="selected-chat-id" value="">
-                    <div id="selected-chat-display" class="mt-2 text-gray-700"></div>
-                    <div id="chats-loading-indicator" class="mt-2 text-blue-600 hidden">
+                    <div id="selected-chat-display" class="mt-2"></div>
+                    <div id="chats-loading-indicator" class="mt-2 text-blue-600 hidden flex items-center">
                         <div class="spinner inline-block"></div>
-                        <span>Loading chats...</span>
+                        <span class="ml-1">Loading chats...</span>
                     </div>
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label class="font-medium">Caption for Documents</label>
+            <div class="mb-6">
+                <label class="font-medium flex items-center mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="mr-2 text-purple-600">
+                        <path
+                            d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z">
+                        </path>
+                    </svg>
+                    Caption for Documents
+                </label>
+                <p class="text-xs text-gray-500 mb-2">Add an optional message to accompany your files</p>
                 <textarea id="caption-input" class="form-control textarea-control mt-1"
                     placeholder="Enter caption for documents (optional)" disabled></textarea>
             </div>
 
-            <div class="mb-4">
-                <label class="flex items-center font-medium">
-                    <input type="checkbox" id="shutdown-checkbox" class="mr-2" disabled>
+            <div class="mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                <label class="flex items-center font-medium mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="mr-2 text-amber-600">
+                        <path d="M18 6 6 18"></path>
+                        <path d="m6 6 12 12"></path>
+                    </svg>
+                    <input type="checkbox" id="shutdown-checkbox" class="mr-2 h-4 w-4" disabled>
                     Shutdown PC after sending file
                 </label>
-                <p class="text-sm text-gray-600 mt-1">When enabled, the system will shutdown after sending the file</p>
+                <p class="text-sm text-amber-600 mt-1">When enabled, the system will shutdown after sending the file</p>
             </div>
         </div>
 
         <div class="card">
-            <h2 class="text-xl font-bold mb-4">3. Control</h2>
-            <div class="flex space-x-2">
-                <button id="start-btn" class="btn btn-primary" disabled>Start Watching</button>
-                <button id="stop-btn" class="btn btn-danger" disabled>Stop Watching</button>
+            <div class="card-header">
+                <h2 class="text-xl font-bold mb-1">3. Control</h2>
+                <p class="text-sm text-gray-500 mb-4">Start or stop the automation process</p>
             </div>
-        </div>
 
-        <div class="card">
-            <h2 class="text-xl font-bold mb-4">File Transfer Status</h2>
-            <div id="transfer-container" class="hidden">
-                <div class="mb-3 flex justify-between items-center">
-                    <span class="font-medium text-blue-700 text-lg" id="current-file">No active transfer</span>
-                    <span class="text-gray-500 text-sm" id="file-size-display"></span>
-                </div>
+            <!-- Add the panda animation container replacing the eye animation -->
+            <div id="panda-animation-container" class="mb-4">
+                <div class="panda-wrapper">
+                    <div class="panda-scene">
+                        <div class="bamboo bamboo-1"></div>
+                        <div class="bamboo bamboo-2"></div>
+                        <div class="bamboo bamboo-3"></div>
+                        <div class="cloud cloud-panda-1"></div>
+                        <div class="cloud cloud-panda-2"></div>
 
-                <!-- Engine animation container -->
-                <div class="engine-animation mb-4">
-                    <div class="engine-container">
-                        <div class="engine-body">
-                            <div class="engine-core">
-                                <div class="engine-rotor">
-                                    <div class="rotor-blade"></div>
-                                    <div class="rotor-blade"></div>
-                                    <div class="rotor-blade"></div>
-                                    <div class="rotor-blade"></div>
+                        <div class="panda">
+                            <div class="panda-body">
+                                <div class="panda-face">
+                                    <div class="panda-ears">
+                                        <div class="ear ear-left"></div>
+                                        <div class="ear ear-right"></div>
+                                    </div>
+                                    <div class="panda-eyes">
+                                        <div class="eye-socket eye-socket-left">
+                                            <div class="panda-eye panda-eye-left">
+                                                <div class="panda-pupil panda-pupil-left"></div>
+                                                <div class="eye-highlight"></div>
+                                            </div>
+                                            <div class="panda-eyelid panda-eyelid-left"></div>
+                                        </div>
+                                        <div class="eye-socket eye-socket-right">
+                                            <div class="panda-eye panda-eye-right">
+                                                <div class="panda-pupil panda-pupil-right"></div>
+                                                <div class="eye-highlight"></div>
+                                            </div>
+                                            <div class="panda-eyelid panda-eyelid-right"></div>
+                                        </div>
+                                    </div>
+                                    <div class="panda-nose"></div>
+                                    <div class="panda-mouth"></div>
+                                </div>
+                                <div class="panda-arms">
+                                    <div class="panda-arm panda-arm-left"></div>
+                                    <div class="panda-arm panda-arm-right"></div>
                                 </div>
                             </div>
-                            <div class="engine-particles-container">
-                                <div class="engine-particles"></div>
+                        </div>
+                    </div>
+                    <div class="panda-status">Not watching</div>
+                </div>
+            </div>
+
+            <div class="flex space-x-3">
+                <button id="start-btn" class="btn btn-primary" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Start Watching
+                </button>
+                <button id="stop-btn" class="btn btn-danger" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                    </svg>
+                    Stop Watching
+                </button>
+            </div>
+        </div>
+
+        <!-- File Transfer Section - Hidden by default -->
+        <div class="transfer-section-container" id="transfer-section-container">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-xl font-bold mb-1">File Transfer Status</h2>
+                    <p class="text-sm text-gray-500 mb-2">Live tracking of your file delivery</p>
+                </div>
+
+                <div id="transfer-container" class="transfer-card">
+                    <div class="mb-3 flex justify-between items-center file-status-card p-3 bg-blue-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                    <polyline points="13 2 13 9 20 9"></polyline>
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="font-medium text-blue-700 text-lg" id="current-file">No active
+                                    transfer</span>
+                                <span class="block text-blue-500 text-sm" id="file-size-display"></span>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Progress bar with enhanced styling -->
-                <div class="relative pt-1">
-                    <div class="flex mb-2 items-center justify-between">
-                        <div>
-                            <span id="progress-status"
-                                class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">
-                                Initializing...
-                            </span>
+                    <!-- Truck animation scene -->
+                    <div class="truck-scene minimized">
+                        <div class="scene-background">
+                            <!-- Sky and environment elements -->
+                            <div class="sky"></div>
+                            <div class="mountains"></div>
+                            <div class="road"></div>
+                            <div class="trees">
+                                <div class="tree tree-1"></div>
+                                <div class="tree tree-2"></div>
+                                <div class="tree tree-3"></div>
+                            </div>
+                            <div class="buildings">
+                                <div class="building building-1"></div>
+                                <div class="building building-2"></div>
+                            </div>
+                            <div class="clouds">
+                                <div class="cloud cloud-1"></div>
+                                <div class="cloud cloud-2"></div>
+                                <div class="cloud cloud-3"></div>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <span id="progress-text" class="text-xs font-semibold inline-block text-blue-600">0%</span>
+
+                        <!-- Truck container -->
+                        <div class="truck-container">
+                            <div class="truck">
+                                <div class="truck-body">
+                                    <div class="truck-cabin">
+                                        <div class="window"></div>
+                                    </div>
+                                    <div class="truck-cargo">
+                                        <div class="whatsapp-logo"></div>
+                                    </div>
+                                </div>
+                                <div class="truck-wheels">
+                                    <div class="wheel wheel-front"></div>
+                                    <div class="wheel wheel-back"></div>
+                                </div>
+                                <div class="truck-lights">
+                                    <div class="light light-front"></div>
+                                    <div class="light light-back"></div>
+                                </div>
+                            </div>
+                            <div class="delivery-complete hidden">
+                                <div class="package"></div>
+                                <div class="package-icon"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 overflow-hidden">
-                        <div id="progress-bar" class="progress-gradient rounded-full h-2" style="width: 0%"></div>
+
+                    <!-- Progress bar with enhanced styling -->
+                    <div class="relative pt-1">
+                        <div class="flex mb-2 items-center justify-between">
+                            <div>
+                                <span id="progress-status"
+                                    class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">
+                                    Initializing...
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <span id="progress-text"
+                                    class="text-xs font-semibold inline-block text-blue-600">0%</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 overflow-hidden">
+                            <div id="progress-bar" class="progress-gradient rounded-full h-3" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-600 mt-2">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="mr-1">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <span id="elapsed-time">Elapsed: 0s</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="mr-1">
+                                    <line x1="12" y1="2" x2="12" y2="6"></line>
+                                    <line x1="12" y1="18" x2="12" y2="22"></line>
+                                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                                    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                                    <line x1="2" y1="12" x2="6" y2="12"></line>
+                                    <line x1="18" y1="12" x2="22" y2="12"></line>
+                                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                                    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                                </svg>
+                                <span id="transfer-speed">0 MB/s</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex justify-between text-xs text-gray-600 mt-1">
-                        <span id="elapsed-time">Elapsed: 0s</span>
-                        <span id="transfer-speed">0 MB/s</span>
+
+                    <div class="mt-4 p-4 rounded-md bg-gray-50 border border-gray-200" id="transfer-details">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-700">Transfer Details</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="mr-2">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="8.5" cy="7" r="4"></circle>
+                                    <polyline points="17 11 19 13 23 9"></polyline>
+                                </svg>
+                                Destination:
+                            </div>
+                            <div id="transfer-destination" class="truncate font-medium">-</div>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="mr-2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                                File type:
+                            </div>
+                            <div id="transfer-file-type" class="font-medium">-</div>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="mr-2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                ETA:
+                            </div>
+                            <div id="transfer-eta" class="font-medium">Calculating...</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mt-4 p-3 rounded-md bg-gray-50 border border-gray-200" id="transfer-details">
-                    <div class="flex items-center space-x-2 mb-2">
-                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                        <span class="text-sm font-medium">Transfer Details</span>
+                <!-- Success animation container -->
+                <div id="confirmation-container" class="mt-3">
+                    <div class="success-checkmark">
+                        <div class="check-icon">
+                            <span class="icon-line line-tip"></span>
+                            <span class="icon-line line-long"></span>
+                            <div class="icon-circle"></div>
+                            <div class="icon-fix"></div>
+                        </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-1 text-xs text-gray-600">
-                        <div>Destination:</div>
-                        <div id="transfer-destination" class="truncate">-</div>
-                        <div>File type:</div>
-                        <div id="transfer-file-type">-</div>
-                        <div>ETA:</div>
-                        <div id="transfer-eta">Calculating...</div>
+                    <div class="text-center">
+                        <div class="font-medium text-green-700 text-lg" id="confirm-message">File sent successfully!
+                        </div>
+                        <div class="text-sm text-green-600 mt-2" id="confirm-details"></div>
+                        <div class="text-xs text-gray-500 mt-2" id="confirm-stats"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Success animation container -->
-            <div id="confirmation-container" class="hidden mt-3">
-                <div class="success-checkmark">
-                    <div class="check-icon">
-                        <span class="icon-line line-tip"></span>
-                        <span class="icon-line line-long"></span>
-                        <div class="icon-circle"></div>
-                        <div class="icon-fix"></div>
+                <!-- Error animation container -->
+                <div id="error-container" class="mt-3">
+                    <div class="error-x-mark">
+                        <div class="x-icon">
+                            <span class="icon-line line-left"></span>
+                            <span class="icon-line line-right"></span>
+                        </div>
                     </div>
-                </div>
-                <div class="text-center">
-                    <div class="font-medium text-green-700 text-lg" id="confirm-message">File sent successfully!</div>
-                    <div class="text-sm text-green-600" id="confirm-details"></div>
-                    <div class="text-xs text-gray-500 mt-2" id="confirm-stats"></div>
-                </div>
-            </div>
-
-            <!-- Error animation container -->
-            <div id="error-container" class="hidden mt-3">
-                <div class="error-x-mark">
-                    <div class="x-icon">
-                        <span class="icon-line line-left"></span>
-                        <span class="icon-line line-right"></span>
+                    <div class="text-center">
+                        <div class="font-medium text-red-700 text-lg" id="error-message">Transfer failed</div>
+                        <div class="text-sm text-red-600 mt-2" id="error-details"></div>
                     </div>
-                </div>
-                <div class="text-center">
-                    <div class="font-medium text-red-700" id="error-message">Transfer failed</div>
-                    <div class="text-sm text-red-600" id="error-details"></div>
                 </div>
             </div>
         </div>
+
         <div class="card">
-            <h2 class="text-xl font-bold mb-4">Logs</h2>
+            <div class="card-header">
+                <h2 class="text-xl font-bold mb-1">Activity Log</h2>
+                <p class="text-sm text-gray-500 mb-4">Real-time monitoring of application events</p>
+            </div>
             <div id="log-container" class="log-container"></div>
         </div>
+
+        <footer class="mt-6 text-center text-gray-500 text-sm">
+            <p>Chatrik &copy; 2025</p>
+            <p class="mt-1">Files will be sent automatically when detected in the watched folder</p>
+        </footer>
     </div>
 
     <script>
@@ -831,6 +462,7 @@
         const chatsLoadingIndicator = document.getElementById('chats-loading-indicator');
 
         // Progress tracking elements
+        const transferSectionContainer = document.getElementById('transfer-section-container');
         const transferContainer = document.getElementById('transfer-container');
         const currentFile = document.getElementById('current-file');
         const progressBar = document.getElementById('progress-bar');
@@ -857,6 +489,185 @@
         let isWatching = false;
         let allChats = [];
         let activeTransferId = null;
+        let userConfig = null; // Store loaded configuration
+
+        // Panda animation control function
+        function updatePandaAnimation(watching) {
+            const pandaWrapper = document.querySelector('.panda-wrapper');
+            const pandaStatus = document.querySelector('.panda-status');
+
+            if (watching) {
+                pandaWrapper.classList.remove('not-watching');
+                pandaWrapper.classList.add('watching');
+                pandaStatus.textContent = 'Watching folder';
+            } else {
+                pandaWrapper.classList.remove('watching');
+                pandaWrapper.classList.add('not-watching');
+                pandaStatus.textContent = 'Not watching';
+            }
+        }
+
+        // Initialize the panda in not-watching state
+        document.addEventListener('DOMContentLoaded', () => {
+            updatePandaAnimation(false);
+        });
+
+        // Load saved configuration when the app starts
+        async function loadSavedConfiguration() {
+            try {
+                userConfig = await ipcRenderer.invoke('load-user-config');
+
+                if (userConfig) {
+                    // Restore folder path
+                    if (userConfig.folderPath) {
+                        selectedFolder = userConfig.folderPath;
+                        folderPathInput.value = userConfig.folderPath;
+                        addLog(`Loaded saved folder path: ${userConfig.folderPath}`);
+                    }
+
+                    // Restore caption
+                    if (userConfig.caption) {
+                        captionInput.value = userConfig.caption;
+                        addLog(`Loaded saved caption`);
+                    }
+
+                    // Ensure the shutdown checkbox is always unchecked at app start
+                    shutdownCheckbox.checked = false;
+
+                    // Chat will be restored after connection is established
+                    // We can't restore it immediately because we need the chat list first
+                }
+            } catch (error) {
+                addLog(`Error loading saved configuration: ${error}`);
+            }
+        }
+
+        // Save current configuration to disk
+        function saveConfiguration() {
+            if (!userConfig) userConfig = {};
+
+            userConfig.folderPath = selectedFolder;
+            userConfig.chatId = selectedChat;
+            userConfig.chatName = selectedChatDisplay.textContent.replace('Selected: ', '');
+            userConfig.caption = captionInput.value;
+            userConfig.shutdown = shutdownCheckbox.checked;
+
+            ipcRenderer.send('save-user-config', userConfig);
+        }
+
+        // Update the folder selection function to save the config
+        selectFolderBtn.addEventListener('click', async () => {
+            const folder = await ipcRenderer.invoke('select-folder');
+            if (folder) {
+                selectedFolder = folder;
+                folderPathInput.value = folder;
+                addLog(`Selected folder: ${folder}`);
+                updateButtonState();
+
+                // Save the updated configuration
+                saveConfiguration();
+            }
+        });
+
+        // Update the chat selection function to save the config
+        function selectChat(id, name) {
+            selectedChat = id;
+            selectedChatId.value = id;
+            selectedChatDisplay.textContent = `Selected: ${name}`;
+            chatDropdown.classList.add('hidden');
+            chatSearch.value = '';
+            addLog(`Selected chat: ${name}`);
+            updateButtonState();
+
+            // Save the updated configuration
+            saveConfiguration();
+        }
+
+        // Update caption input event to save configuration
+        captionInput.addEventListener('input', () => {
+            ipcRenderer.send('update-caption', captionInput.value);
+            updateButtonState();
+
+            // Debounce the save to avoid too many writes
+            clearTimeout(captionInput._saveTimeout);
+            captionInput._saveTimeout = setTimeout(() => {
+                saveConfiguration();
+            }, 500);
+        });
+
+        // Update shutdown checkbox event to save configuration and show alert
+        shutdownCheckbox.addEventListener('change', () => {
+            // Show alert when user checks the box
+            if (shutdownCheckbox.checked) {
+                const confirmShutdown = confirm('Enabling this checkbox will cause your system to shut down after the final render. Are you sure?');
+
+                // If user cancels, uncheck the box
+                if (!confirmShutdown) {
+                    shutdownCheckbox.checked = false;
+                    return;
+                }
+            }
+
+            ipcRenderer.send('toggle-shutdown', shutdownCheckbox.checked);
+            saveConfiguration();
+        });
+
+        // Function to restore chat selection after connection is established
+        function restoreChatSelection() {
+            if (userConfig && userConfig.chatId && allChats.length > 0) {
+                // Try to find the chat in the loaded chats
+                const savedChat = allChats.find(chat => chat.id === userConfig.chatId);
+
+                if (savedChat) {
+                    selectChat(savedChat.id, savedChat.name);
+                    addLog(`Restored saved chat: ${savedChat.name}`);
+                } else {
+                    addLog('Saved chat not found in current chat list');
+                }
+            }
+        }
+
+        // Update the whatsapp-chats event handler to restore chat selection
+        ipcRenderer.on('whatsapp-chats', (event, chats) => {
+            allChats = chats;
+            addLog(`Loaded ${chats.length} chats`);
+            chatsLoadingIndicator.classList.add('hidden');
+
+            // Try to restore saved chat selection
+            restoreChatSelection();
+        });
+
+        // Load configuration when the app starts
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedConfiguration();
+        });
+
+        // Add the missing chat search input event listener
+        chatSearch.addEventListener('input', () => {
+            const query = chatSearch.value.trim();
+
+            if (query.length > 0) {
+                chatDropdown.classList.remove('hidden');
+                filterChats(query);
+            } else {
+                chatDropdown.classList.add('hidden');
+            }
+        });
+
+        // Also add a click handler to show all chats when clicking on the search field
+        chatSearch.addEventListener('click', () => {
+            if (isConnected && allChats.length > 0) {
+                chatDropdown.classList.remove('hidden');
+                filterChats('');  // Empty query shows all chats
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!chatSearch.contains(e.target) && !chatDropdown.contains(e.target)) {
+                chatDropdown.classList.add('hidden');
+            }
+        });
 
         // Functions
         function updateStatus(status) {
@@ -965,16 +776,6 @@
             }
         }
 
-        function selectChat(id, name) {
-            selectedChat = id;
-            selectedChatId.value = id;
-            selectedChatDisplay.textContent = `Selected: ${name}`;
-            chatDropdown.classList.add('hidden');
-            chatSearch.value = '';
-            addLog(`Selected chat: ${name}`);
-            updateButtonState();
-        }
-
         // File size formatter function
         function formatFileSize(bytes) {
             if (bytes < 1024) return bytes + ' B';
@@ -983,46 +784,84 @@
             else return (bytes / 1073741824).toFixed(2) + ' GB';
         }
 
-        // Engine animation state manager
-        function updateEngineState(state, percent = 0) {
-            const engineContainer = document.querySelector('.engine-animation');
+        // Truck animation state manager
+        function updateTruckAnimation(state, percent = 0) {
+            const truckScene = document.querySelector('.truck-scene');
+            const truck = document.querySelector('.truck');
+            const deliveryComplete = document.querySelector('.delivery-complete');
 
             // Remove all state classes first
-            engineContainer.classList.remove(
+            truckScene.classList.remove(
                 'transfer-starting',
                 'transfer-progress',
                 'transfer-completing',
-                'transfer-active'
+                'transfer-active',
+                'delivery-completed'
             );
 
-            // Add appropriate class based on state
-            if (state === 'starting') {
-                engineContainer.classList.add('transfer-active', 'transfer-starting');
-            } else if (state === 'progress') {
-                engineContainer.classList.add('transfer-active', 'transfer-progress');
-            } else if (state === 'completing') {
-                engineContainer.classList.add('transfer-active', 'transfer-completing');
-            } else if (state === 'idle') {
-                // No classes - engine stopped
-            }
+            // Calculate truck position based on progress percentage
+            if (truck) {
+                // Reset truck position for new transfers
+                if (state === 'starting') {
+                    truck.style.left = '0%';
+                    deliveryComplete.classList.add('hidden');
+                }
 
-            // Adjust rotor speed based on percentage if in progress state
-            if (state === 'progress' && percent > 0) {
-                // The higher the percentage, the faster the rotor spins
-                const rotationDuration = 1.5 - (percent / 100); // 1.5s at 0%, 0.5s at 100%
-                const rotor = document.querySelector('.engine-rotor');
-                if (rotor) {
-                    rotor.style.animationDuration = `${Math.max(0.5, rotationDuration)}s`;
+                // Move the truck based on progress
+                if (state === 'progress' && percent > 0) {
+                    // Move truck from 0% to 80% of the container width
+                    const truckPosition = Math.min(80, percent * 0.8);
+                    truck.style.left = `${truckPosition}%`;
+
+                    // Adjust wheel animation speed based on transfer speed
+                    const speedFactor = parseFloat(transferSpeed.textContent) || 1;
+                    const baseSpeed = 1; // Base animation speed in seconds
+                    const wheelSpeed = Math.max(0.2, baseSpeed - (speedFactor * 0.05));
+
+                    document.querySelectorAll('.wheel').forEach(wheel => {
+                        wheel.style.animationDuration = `${wheelSpeed}s`;
+                    });
+
+                    truckScene.classList.add('transfer-active', 'transfer-progress');
+                }
+
+                // Show delivery animation when complete
+                if (state === 'completing') {
+                    truck.style.left = '85%';
+                    truckScene.classList.add('transfer-active', 'transfer-completing');
+                }
+
+                // Show delivery complete animation
+                if (state === 'complete') {
+                    truck.style.left = '100%';
+                    deliveryComplete.classList.remove('hidden');
+                    truckScene.classList.add('delivery-completed');
+                }
+
+                // Reset animation when idle
+                if (state === 'idle') {
+                    // Leave the truck in its final position
                 }
             }
         }
 
         // New and improved upload progress handler
         ipcRenderer.on('upload-progress', (event, data) => {
-            // Show transfer container - THIS IS WHEN THE ENGINE ANIMATION BECOMES VISIBLE
-            transferContainer.classList.remove('hidden');
-            confirmationContainer.classList.add('hidden');
-            errorContainer.classList.add('hidden');
+            // First show the entire transfer section container
+            transferSectionContainer.classList.add('visible');
+
+            // After container is visible, show the transfer card with animation
+            setTimeout(() => {
+                // Show transfer container with animation
+                transferContainer.classList.add('visible');
+                confirmationContainer.classList.remove('visible');
+                errorContainer.classList.remove('visible');
+
+                // Show the truck scene with animation
+                const truckScene = document.querySelector('.truck-scene');
+                truckScene.classList.remove('minimized');
+                truckScene.classList.add('active');
+            }, 300); // Short delay for smooth sequential transitions
 
             // Display file size
             document.getElementById('file-size-display').textContent = data.fileSize || '';
@@ -1046,18 +885,18 @@
             transferFileType.textContent = data.fileType || '-';
             transferEta.textContent = data.eta || 'Calculating...';
 
-            // Update engine animation state based on progress
+            // Update truck animation state based on progress
             if (progressPercent < 10) {
-                updateEngineState('starting');
-                transferStatus.textContent = 'STARTING ENGINE...';
+                updateTruckAnimation('starting');
+                transferStatus.textContent = 'STARTING DELIVERY...';
                 transferStatus.className = 'text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-600 bg-yellow-100';
             } else if (progressPercent < 90) {
-                updateEngineState('progress', progressPercent);
+                updateTruckAnimation('progress', progressPercent);
                 transferStatus.textContent = 'TRANSFERRING...';
                 transferStatus.className = 'text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100';
             } else {
-                updateEngineState('completing');
-                transferStatus.textContent = 'FINALIZING...';
+                updateTruckAnimation('completing');
+                transferStatus.textContent = 'ARRIVING...';
                 transferStatus.className = 'text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-600 bg-green-100';
             }
 
@@ -1069,53 +908,84 @@
         ipcRenderer.on('file-sent-confirmed', (event, data) => {
             // Only show confirmation if it's for the active transfer
             if (activeTransferId === data.transferId) {
-                // First stop the engine animation
-                updateEngineState('idle');
+                // Show final truck delivery animation
+                updateTruckAnimation('complete');
 
-                // Hide transfer progress after a short delay to show the engine stopping
+                // Hide transfer progress after a short delay to show the delivery animation
                 setTimeout(() => {
-                    transferContainer.classList.add('hidden');
-                    confirmationContainer.classList.remove('hidden');
-                    errorContainer.classList.add('hidden');
+                    // Animate out the transfer container
+                    transferContainer.classList.remove('visible');
 
-                    // Update confirmation message
-                    confirmMessage.textContent = `File sent successfully: ${data.file}`;
+                    // Clean up the truck scene
+                    const truckScene = document.querySelector('.truck-scene');
+                    truckScene.classList.add('minimized');
+                    truckScene.classList.remove('active');
 
-                    // Add status details
-                    let statusText = 'Delivered to server';
-                    if (data.status === 3) statusText = 'Delivered to recipient';
-                    if (data.status === 4) statusText = 'Read by recipient';
+                    // Animate in the confirmation container
+                    setTimeout(() => {
+                        confirmationContainer.classList.add('visible');
+                        errorContainer.classList.remove('visible');
 
-                    confirmDetails.textContent = `${statusText}`;
+                        // Update confirmation message
+                        confirmMessage.textContent = `File sent successfully: ${data.file}`;
 
-                    // Add stats
-                    confirmStats.textContent = `Transfer completed in ${data.elapsed}s | Average speed: ${data.speed} MB/s`;
+                        // Add status details
+                        let statusText = 'Delivered to server';
+                        if (data.status === 3) statusText = 'Delivered to recipient';
+                        if (data.status === 4) statusText = 'Read by recipient';
 
-                    // Add log entry
-                    addLog(`✅ File transfer completed successfully: ${data.file}`);
-                    activeTransferId = null;
-                }, 1500);
+                        confirmDetails.textContent = `${statusText}`;
+
+                        // Add stats
+                        confirmStats.textContent = `Transfer completed in ${data.elapsed}s | Average speed: ${data.speed} MB/s`;
+
+                        // Add log entry
+                        addLog(`✅ File transfer completed successfully: ${data.file}`);
+                        activeTransferId = null;
+                    }, 500); // Short delay for sequential animations
+                }, 3000); // Longer delay to show the delivery animation
+
+                // Add a timeout to hide the entire transfer section after showing confirmation
+                setTimeout(() => {
+                    // Hide the entire transfer section container after 8 seconds
+                    transferSectionContainer.classList.remove('visible');
+                }, 8000); // Give user time to see confirmation before hiding
             }
         });
 
         // Enhanced file send failure
         ipcRenderer.on('file-send-failed', (event, data) => {
-            // First stop the engine animation
-            updateEngineState('idle');
+            // First stop the truck animation
+            updateTruckAnimation('idle');
 
             setTimeout(() => {
-                transferContainer.classList.add('hidden');
-                confirmationContainer.classList.add('hidden');
-                errorContainer.classList.remove('hidden');
+                // Animate out the transfer container
+                transferContainer.classList.remove('visible');
 
-                // Update error message
-                errorMessage.textContent = `Transfer failed: ${data.file}`;
-                errorDetails.textContent = `Error: ${data.error}`;
+                // Clean up the truck scene
+                const truckScene = document.querySelector('.truck-scene');
+                truckScene.classList.add('minimized');
+                truckScene.classList.remove('active');
 
-                // Add log entry
-                addLog(`❌ File transfer failed: ${data.file} - ${data.error}`);
-                activeTransferId = null;
+                setTimeout(() => {
+                    // Animate in the error container
+                    confirmationContainer.classList.remove('visible');
+                    errorContainer.classList.add('visible');
+
+                    // Update error message
+                    errorMessage.textContent = `Transfer failed: ${data.file}`;
+                    errorDetails.textContent = `Error: ${data.error}`;
+
+                    // Add log entry
+                    addLog(`❌ File transfer failed: ${data.file} - ${data.error}`);
+                    activeTransferId = null;
+                }, 500); // Short delay for sequential animations
             }, 1000);
+
+            // After displaying the error, set a timeout to hide the transfer section
+            setTimeout(() => {
+                transferSectionContainer.classList.remove('visible');
+            }, 8000); // Hide after 8 seconds
         });
 
         // Event listeners
@@ -1130,42 +1000,6 @@
         logoutBtn.addEventListener('click', () => {
             ipcRenderer.send('logout-whatsapp');
             addLog('Logging out of WhatsApp...');
-        });
-
-        selectFolderBtn.addEventListener('click', async () => {
-            const folder = await ipcRenderer.invoke('select-folder');
-            if (folder) {
-                selectedFolder = folder;
-                folderPathInput.value = folder;
-                addLog(`Selected folder: ${folder}`);
-                updateButtonState();
-            }
-        });
-
-        chatSearch.addEventListener('focus', () => {
-            filterChats(chatSearch.value);
-            chatDropdown.classList.remove('hidden');
-        });
-
-        // Handle clicks outside the dropdown
-        document.addEventListener('click', (e) => {
-            if (!chatDropdown.contains(e.target) && e.target !== chatSearch) {
-                chatDropdown.classList.add('hidden');
-            }
-        });
-
-        chatSearch.addEventListener('input', () => {
-            filterChats(chatSearch.value);
-            chatDropdown.classList.remove('hidden');
-        });
-
-        captionInput.addEventListener('input', () => {
-            ipcRenderer.send('update-caption', captionInput.value);
-            updateButtonState();
-        });
-
-        shutdownCheckbox.addEventListener('change', () => {
-            ipcRenderer.send('toggle-shutdown', shutdownCheckbox.checked);
         });
 
         startBtn.addEventListener('click', () => {
@@ -1187,6 +1021,7 @@
                 logoutBtn.disabled = true;
             }
             updateButtonState();
+            updatePandaAnimation(true);
             addLog('Watching started');
         });
 
@@ -1200,6 +1035,7 @@
                 logoutBtn.disabled = false;
             }
             updateButtonState();
+            updatePandaAnimation(false);
             addLog('Watching stopped');
         });
 
@@ -1231,29 +1067,29 @@
         ipcRenderer.on('whatsapp-ready', () => {
             addLog('WhatsApp client is ready!');
             updateStatus('connected');
-            // Show chat loading indicator when connection is established
+            // Show chat loading indicator only after connection is established
             chatsLoadingIndicator.classList.remove('hidden');
         });
 
         ipcRenderer.on('whatsapp-authenticated', () => {
             addLog('WhatsApp authenticated');
             updateStatus('connected');
+            // Show chat loading indicator when authenticated
+            chatsLoadingIndicator.classList.remove('hidden');
         });
 
         ipcRenderer.on('whatsapp-auth-failure', () => {
             addLog('WhatsApp authentication failed');
             updateStatus('disconnected');
+            // Hide chat loading indicator on auth failure
+            chatsLoadingIndicator.classList.add('hidden');
         });
 
         ipcRenderer.on('whatsapp-disconnected', () => {
             addLog('WhatsApp disconnected');
             updateStatus('disconnected');
             isWatching = false;
-        });
-
-        ipcRenderer.on('whatsapp-chats', (event, chats) => {
-            allChats = chats;
-            addLog(`Loaded ${chats.length} chats`);
+            // Hide chat loading indicator on disconnect
             chatsLoadingIndicator.classList.add('hidden');
         });
 
@@ -1273,10 +1109,11 @@
             addLog(`ERROR: ${message}`);
         });
 
-        // Initialize
+        // Initialize - ensure the transfer section starts hidden
         updateStatus('disconnected');
         addLog('Application started');
         chatsLoadingIndicator.classList.remove('hidden');
+        transferSectionContainer.classList.remove('visible'); // Ensure hidden on startup
     </script>
 </body>
 

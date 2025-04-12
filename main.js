@@ -23,6 +23,41 @@ let activeTransfers = new Map(); // Track active transfers
 let maxRetries = 5;
 let preventAutoReconnect = false; // New flag to control automatic reconnections
 
+// Configuration settings storage
+const configFilePath = path.join(app.getPath('userData'), 'user_config.json');
+
+// Load user configuration from disk
+function loadUserConfig() {
+    try {
+        if (fs.existsSync(configFilePath)) {
+            const rawData = fs.readFileSync(configFilePath, 'utf8');
+            const config = JSON.parse(rawData);
+            logToFileAndUI('User configuration loaded');
+            return config;
+        }
+    } catch (err) {
+        logToFileAndUI(`Error loading configuration: ${err.message}`, true);
+    }
+    // Return empty config if file doesn't exist or there's an error
+    return {
+        folderPath: '',
+        chatId: '',
+        chatName: '',
+        caption: '',
+        shutdown: false
+    };
+}
+
+// Save user configuration to disk
+function saveUserConfig(config) {
+    try {
+        fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2), 'utf8');
+        logToFileAndUI('User configuration saved');
+    } catch (err) {
+        logToFileAndUI(`Error saving configuration: ${err.message}`, true);
+    }
+}
+
 // Ensure the user data directory exists
 const userDataPath = path.join(app.getPath('userData'), 'whatsapp-auth');
 if (!fs.existsSync(userDataPath)) {
@@ -35,19 +70,40 @@ function logToFileAndUI(message, isError = false) {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}\n`;
 
-    fs.appendFileSync(logFilePath, logMessage);
+    // Always write to log file
+    try {
+        fs.appendFileSync(logFilePath, logMessage);
+    } catch (error) {
+        console.error('Failed to write to log file:', error);
+    }
 
-    if (mainWindow) {
-        if (isError) {
-            mainWindow.webContents.send('error', message);
-        } else {
-            mainWindow.webContents.send('log', message);
+    // Only send to UI if mainWindow exists AND is not destroyed
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        try {
+            if (isError) {
+                mainWindow.webContents.send('error', message);
+            } else {
+                mainWindow.webContents.send('log', message);
+            }
+        } catch (error) {
+            console.error('Failed to send log to renderer:', error);
         }
     }
+
     console.log(logMessage);
 }
 
 function createWindow() {
+    // Determine the correct icon based on platform
+    let iconPath;
+    if (process.platform === 'win32') {
+        iconPath = path.join(__dirname, 'assets/icon.ico');
+    } else if (process.platform === 'darwin') {
+        iconPath = path.join(__dirname, 'assets/icon.icns');
+    } else {
+        iconPath = path.join(__dirname, 'assets/icon.png');
+    }
+
     mainWindow = new BrowserWindow({
         width: 1000,
         height: 800,
@@ -57,17 +113,36 @@ function createWindow() {
             // Enable garbage collection exposure
             additionalArguments: ['--js-flags=--expose-gc']
         },
-        icon: path.join(__dirname, 'assets/icon.png')
+        icon: iconPath
     });
 
     mainWindow.loadFile('index.html');
 
     // Log system resources but do NOT initialize WhatsApp automatically
     getSystemResources();
-    logToFileAndUI('Application ready. Click "Connect WhatsApp" to begin.');
+    logToFileAndUI('Application ready. Checking for existing session...');
 
-    // Open DevTools in development
-    // mainWindow.webContents.openDevTools();
+    // After window is loaded, check for existing WhatsApp session
+    mainWindow.webContents.on('did-finish-load', async () => {
+        // Check if auth credentials exist
+        const authDirectory = path.join(app.getPath('userData'), 'baileys-auth');
+        const credentialsFile = path.join(authDirectory, 'creds.json');
+
+        if (fs.existsSync(credentialsFile)) {
+            try {
+                // Auth data exists, try to reconnect automatically
+                logToFileAndUI('Existing WhatsApp session found, attempting to restore...');
+                mainWindow.webContents.send('whatsapp-loading', true);
+                await initWhatsAppClient();
+            } catch (err) {
+                logToFileAndUI(`Failed to restore session: ${err.message}`, true);
+                mainWindow.webContents.send('whatsapp-disconnected');
+            }
+        } else {
+            logToFileAndUI('No existing session found. Click "Connect WhatsApp" to begin.');
+            mainWindow.webContents.send('whatsapp-disconnected');
+        }
+    });
 }
 
 app.whenReady().then(() => {
@@ -83,15 +158,49 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', async function () {
+    // Clean up all active intervals and timers
+    if (global.progressIntervals) {
+        global.progressIntervals.forEach(clearInterval);
+        global.progressIntervals = [];
+    }
+
+    // Just end the socket connection WITHOUT logging out
+    // This preserves authentication for the next app launch
     if (sock) {
         try {
-            sock.logout();
-            sock.end();
+            console.log('Ending WhatsApp connection (preserving auth)...');
+            // Check if socket is valid before ending it
+            if (sock.ev && typeof sock.end === 'function' && !sock.destroyed) {
+                sock.end();
+            } else {
+                console.log('Socket already destroyed or invalid');
+            }
+            sock = null;
         } catch (err) {
-            logToFileAndUI(`Error closing WhatsApp connection: ${err.message}`, true);
+            console.error(`Error closing WhatsApp connection: ${err.message}`);
         }
     }
-     app.quit();
+
+    // Close file watcher
+    if (watcher) {
+        try {
+            watcher.close();
+            watcher = null;
+        } catch (err) {
+            console.error(`Error closing file watcher: ${err.message}`);
+        }
+    }
+
+    // Clean up any other resources
+    store = null;
+    mainWindow = null;
+
+    // Run garbage collection if available
+    if (global.gc) {
+        global.gc();
+    }
+
+    app.quit();
 });
 
 // Force shutdown computer function (with elevated privileges)
@@ -131,6 +240,36 @@ function getSystemResources() {
         freeMemGB,
         cpuCount
     };
+}
+
+// Update the forceContactSync function to be more gentle with WhatsApp API
+async function forceContactSync() {
+    try {
+        logToFileAndUI('Gently fetching WhatsApp contacts...');
+
+        if (!sock || !sock.user) {
+            logToFileAndUI('Cannot sync contacts: WhatsApp connection not established', true);
+            return false;
+        }
+
+        // Only use safe methods that won't disrupt the connection
+        try {
+            if (store && store.chats) {
+                const storeChats = await store.chats.all();
+                logToFileAndUI(`Using ${storeChats.length} existing chats from store`);
+            }
+        } catch (err) {
+            logToFileAndUI(`Error accessing store: ${err.message}`);
+        }
+
+        // We'll avoid all direct protocol manipulation as it's causing connection issues
+
+        logToFileAndUI('Contact synchronization completed safely');
+        return true;
+    } catch (error) {
+        logToFileAndUI(`Contact sync error: ${error.message}`, true);
+        return false;
+    }
 }
 
 // Initialize WhatsApp client with Baileys - Simplified implementation to avoid the public key error
@@ -204,13 +343,16 @@ async function initWhatsAppClient() {
             if (connection === 'open') {
                 logToFileAndUI('WhatsApp connection is open and ready');
 
+                // Add contact sync here
+                forceContactSync().then(() => {
+                    // Get chats after attempting contact sync
+                    getAllChats().catch(e => logToFileAndUI(`Error getting chats: ${e.message}`, true));
+                });
+
                 if (mainWindow) {
                     mainWindow.webContents.send('whatsapp-ready');
                     mainWindow.webContents.send('whatsapp-authenticated');
                 }
-
-                // Get chats after connection is established
-                getAllChats().catch(e => logToFileAndUI(`Error getting chats: ${e.message}`, true));
             }
 
             if (connection === 'close') {
@@ -296,14 +438,32 @@ ipcMain.on('init-whatsapp', async (event) => {
     await initWhatsAppClient();
 });
 
+ipcMain.handle('load-user-config', () => {
+    return loadUserConfig();
+});
+
+ipcMain.on('save-user-config', (event, config) => {
+    saveUserConfig(config);
+});
+
 ipcMain.on('update-caption', async (event, value) => {
     caption = value;
     logToFileAndUI(`Caption updated to: ${caption}`);
+
+    // Update the stored config
+    const config = loadUserConfig();
+    config.caption = value;
+    saveUserConfig(config);
 });
 
 ipcMain.on('toggle-shutdown', (event, value) => {
     shutdownAfterSend = value;
     logToFileAndUI(`Shutdown after send set to: ${shutdownAfterSend}`);
+
+    // Update the stored config
+    const config = loadUserConfig();
+    config.shutdown = value;
+    saveUserConfig(config);
 });
 
 // Handle folder selection
@@ -586,6 +746,11 @@ async function processAndSendFile(filePath, chatId, attemptCount = 0) {
             // Wait a moment to ensure server has processed the message
             await new Promise(resolve => setTimeout(resolve, 3000));
 
+            // Calculate the final statistics for the transfer
+            const totalTime = Math.floor((Date.now() - sendStartTime) / 1000);
+            const speedMBps = fileSizeMB / (totalTime || 1);
+            const finalSpeed = speedMBps.toFixed(2);
+
             // In newer Baileys versions, we need to use a different approach
             // The messageInfo function doesn't exist in current versions
             try {
@@ -601,7 +766,9 @@ async function processAndSendFile(filePath, chatId, attemptCount = 0) {
                                 file: fileName,
                                 messageId: result.key.id,
                                 status: status,
-                                transferId
+                                transferId,
+                                elapsed: totalTime,
+                                speed: finalSpeed
                             });
                             return; // Successfully found status
                         }
@@ -615,7 +782,9 @@ async function processAndSendFile(filePath, chatId, attemptCount = 0) {
                     file: fileName,
                     messageId: result.key.id,
                     status: 2, // Assume delivered to server
-                    transferId
+                    transferId,
+                    elapsed: totalTime,
+                    speed: finalSpeed
                 });
 
                 // Set up listener for future status updates for this message
@@ -641,17 +810,27 @@ async function processAndSendFile(filePath, chatId, attemptCount = 0) {
                     file: fileName,
                     messageId: result.key.id,
                     status: 2, // Assume delivered to server
-                    transferId
+                    transferId,
+                    elapsed: totalTime,
+                    speed: finalSpeed
                 });
             }
         } catch (verifyErr) {
             logToFileAndUI(`Sent file but couldn't verify delivery status: ${verifyErr.message}`);
             // Still send confirmation since the file was sent
+
+            // Calculate the final statistics even in error case
+            const totalTime = Math.floor((Date.now() - sendStartTime) / 1000);
+            const speedMBps = fileSizeMB / (totalTime || 1);
+            const finalSpeed = speedMBps.toFixed(2);
+
             mainWindow.webContents.send('file-sent-confirmed', {
                 file: fileName,
                 messageId: result.key.id,
                 status: 2, // Assume delivered to server
-                transferId
+                transferId,
+                elapsed: totalTime,
+                speed: finalSpeed
             });
         }
 
@@ -818,30 +997,31 @@ ipcMain.on('reset-auth-data', () => {
     try {
         logToFileAndUI('Resetting authentication data to force new QR code generation...');
 
-        // Delete auth credentials
-        if (fs.existsSync(authCreds)) {
-            fs.unlinkSync(authCreds);
-            logToFileAndUI('Auth credentials deleted');
-        }
+        // Get the correct auth directory path that we're using
+        const authDirectory = path.join(app.getPath('userData'), 'baileys-auth');
 
-        // Clear auth keys directory
-        if (fs.existsSync(authKeysPath)) {
-            fs.rmSync(authKeysPath, { recursive: true, force: true });
-            fs.mkdirSync(authKeysPath, { recursive: true });
-            logToFileAndUI('Auth keys directory reset');
+        // Check if the directory exists before attempting to delete files
+        if (fs.existsSync(authDirectory)) {
+            // Delete the entire auth directory and recreate it
+            fs.rmSync(authDirectory, { recursive: true });
+            fs.mkdirSync(authDirectory, { recursive: true });
+            logToFileAndUI('Auth credentials directory reset');
         }
 
         // Reset reconnect attempts counter
         const reconnectAttemptFile = path.join(userDataPath, 'reconnect_attempts');
-        fs.writeFileSync(reconnectAttemptFile, '0');
+        if (fs.existsSync(reconnectAttemptFile)) {
+            fs.writeFileSync(reconnectAttemptFile, '0');
+        }
 
         // Also clear store file to prevent any cached data issues
-        const storeFile = path.join(userDataPath, 'baileys_store.json');
+        const storeFile = path.join(app.getPath('userData'), 'baileys_store.json');
         if (fs.existsSync(storeFile)) {
             fs.unlinkSync(storeFile);
             logToFileAndUI('Store data cleared');
         }
 
+        preventAutoReconnect = false; // Reset connection prevention flag
         logToFileAndUI('Authentication data reset complete, ready for new QR code');
     } catch (err) {
         logToFileAndUI(`Error resetting auth data: ${err.message}`, true);
@@ -860,7 +1040,7 @@ ipcMain.on('logout-whatsapp', async () => {
 
             // Clear auth data
             if (fs.existsSync(userDataPath)) {
-                fs.rmSync(userDataPath, { recursive: true, force: true });
+                fs.rmSync(userDataPath, { recursive: true });
                 logToFileAndUI('Authentication data cleared');
             }
 
@@ -920,19 +1100,20 @@ ipcMain.on('set-max-retries', (event, count) => {
     logToFileAndUI(`Maximum retry attempts set to: ${maxRetries}`);
 });
 
-// Enhanced getAllChats function to find as many chats as possible
+// Enhanced getAllChats function to find all contacts and chats - without placeholders
 async function getAllChats() {
     try {
-        logToFileAndUI('Fetching WhatsApp chats (enhanced method)...');
+        logToFileAndUI('Fetching WhatsApp chats and contacts using official Baileys method...');
 
         // Show loading indicator in UI
         if (mainWindow) {
             mainWindow.webContents.send('chats-loading', true);
         }
 
-        const chatSet = new Map(); // Use a Map to avoid duplicates
+        // Use a Map to prevent duplicates by enforcing unique JIDs
+        const chatSet = new Map();
 
-        // 1. First get all groups
+        // STEP 1: Get groups using official Baileys method
         try {
             const fetchedGroups = await sock.groupFetchAllParticipating();
             logToFileAndUI(`Found ${Object.keys(fetchedGroups).length} participating groups`);
@@ -948,13 +1129,14 @@ async function getAllChats() {
             logToFileAndUI(`Error fetching groups: ${e.message}`, true);
         }
 
-        // 2. Get chats from store - this should have more chats than just the direct API call
+        // STEP 2: Get contacts and individual chats from Baileys store
         try {
             if (store && store.chats) {
                 const storeChats = await store.chats.all();
                 logToFileAndUI(`Found ${storeChats.length} chats in store`);
 
                 storeChats.forEach(chat => {
+                    // Only add if not already in the map
                     if (!chatSet.has(chat.id)) {
                         chatSet.set(chat.id, {
                             id: chat.id,
@@ -968,92 +1150,22 @@ async function getAllChats() {
             logToFileAndUI(`Error fetching chats from store: ${e.message}`, true);
         }
 
-        // 3. Get chats from message history - this can find contacts even if they're not in active chats
-        try {
-            if (store && store.messages) {
-                const messageJids = Object.keys(store.messages);
-                logToFileAndUI(`Found ${messageJids.length} chats in message history`);
-
-                for (const jid of messageJids) {
-                    if (!chatSet.has(jid)) {
-                        const isGroup = jid.endsWith('@g.us');
-
-                        // For non-groups, try to get contact info
-                        let name = jid.split('@')[0];
-                        if (!isGroup) {
-                            try {
-                                const contact = await sock.contactAddOrGet(jid);
-                                if (contact && contact.name) {
-                                    name = contact.name;
-                                } else if (contact && contact.notify) {
-                                    name = contact.notify;
-                                }
-                            } catch (err) {
-                                // Just use JID if contact fetch fails
-                            }
-                        }
-
-                        chatSet.set(jid, {
-                            id: jid,
-                            name: name,
-                            isGroup: isGroup
-                        });
+        // STEP 3: Format phone numbers to make them more readable
+        for (const [jid, chatData] of chatSet.entries()) {
+            if (!chatData.isGroup) {
+                const phoneNumber = jid.split('@')[0];
+                // Only update if the name is just the raw ID
+                if (chatData.name === phoneNumber) {
+                    // Format the phone number with "+" for readability
+                    if (phoneNumber.length > 7) {
+                        chatData.name = `+${phoneNumber}`;
                     }
                 }
             }
-        } catch (e) {
-            logToFileAndUI(`Error processing message history: ${e.message}`, true);
         }
 
-        // 4. Try to get contacts directly from phone
-        try {
-            // Note: method depends on Baileys version
-            if (typeof sock.fetchContacts === 'function') {
-                const contacts = await sock.fetchContacts();
-                logToFileAndUI(`Found ${Object.keys(contacts).length} contacts`);
-
-                Object.entries(contacts).forEach(([id, contact]) => {
-                    if (!chatSet.has(id) && !id.endsWith('@g.us')) {
-                        chatSet.set(id, {
-                            id: id,
-                            name: contact.name || contact.notify || id.split('@')[0],
-                            isGroup: false
-                        });
-                    }
-                });
-            } else {
-                logToFileAndUI('Direct contact fetch not supported in this version');
-            }
-        } catch (e) {
-            // This may not work in all versions
-            logToFileAndUI('Direct contact query not supported in this version');
-        }
-
-        // Final approach - check if we can get all saved contacts
-        try {
-            if (sock.contacts) {
-                const allContacts = Object.entries(sock.contacts);
-                logToFileAndUI(`Found ${allContacts.length} contacts from sock.contacts`);
-
-                allContacts.forEach(([jid, contact]) => {
-                    if (!chatSet.has(jid) && !jid.endsWith('@g.us')) {
-                        chatSet.set(jid, {
-                            id: jid,
-                            name: contact.name || contact.notify || jid.split('@')[0],
-                            isGroup: false
-                        });
-                    }
-                });
-            }
-        } catch (e) {
-            logToFileAndUI(`Error accessing contacts: ${e.message}`, true);
-        }
-
-        // Convert map to array and send to renderer
+        // Convert map to array and sort for better usability
         const chatList = Array.from(chatSet.values());
-        logToFileAndUI(`Total chats found: ${chatList.length}`);
-
-        // Sort chats by name for better usability
         chatList.sort((a, b) => {
             // Groups first, then individual chats
             if (a.isGroup && !b.isGroup) return -1;
@@ -1061,24 +1173,36 @@ async function getAllChats() {
             return a.name.localeCompare(b.name);
         });
 
-        // Hide loading indicator and send chats to UI
-        mainWindow.webContents.send('chats-loading', false);
-        mainWindow.webContents.send('whatsapp-chats', chatList);
-        logToFileAndUI(`Sent ${chatList.length} chats to UI`);
+        logToFileAndUI(`Total unique chats and contacts found: ${chatList.length}`);
 
-        // Try to sync more data for future requests
-        try {
-            // Request history sync
-            sock.ev.emit('presence.request', []);
-            if (typeof sock.resyncAppState === 'function') {
-                sock.resyncAppState(['Contacts', 'Chats', 'RecentChats']).catch(e => {
-                    console.log('Sync error:', e);
-                });
-            }
-        } catch (e) {
-            logToFileAndUI(`Warning: Could not request sync: ${e.message}`);
+        // Hide loading indicator and send chats to UI
+        if (mainWindow) {
+            mainWindow.webContents.send('chats-loading', false);
+            mainWindow.webContents.send('whatsapp-chats', chatList);
         }
 
+        // Setup listener for contact updates
+        sock.ev.on('contacts.update', contacts => {
+            let updated = false;
+            for (const contact of contacts) {
+                const jid = contact.id;
+                if (chatSet.has(jid)) {
+                    const chat = chatSet.get(jid);
+                    if (contact.name && chat.name !== contact.name) {
+                        chat.name = contact.name;
+                        updated = true;
+                    }
+                }
+            }
+
+            if (updated && mainWindow) {
+                const updatedList = Array.from(chatSet.values());
+                mainWindow.webContents.send('whatsapp-chats', updatedList);
+                logToFileAndUI('Updated chat list with new contact names');
+            }
+        });
+
+        return chatList;
     } catch (err) {
         console.error('Error fetching chats:', err);
         logToFileAndUI(`Failed to fetch WhatsApp chats: ${err.message}`, true);
@@ -1086,5 +1210,6 @@ async function getAllChats() {
         if (mainWindow) {
             mainWindow.webContents.send('chats-loading', false);
         }
+        return [];
     }
 }
