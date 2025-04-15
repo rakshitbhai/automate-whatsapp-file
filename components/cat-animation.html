@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Animation</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="../styles/cat.css" rel="stylesheet">
+    <style>
+        body { 
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced cat animation environment -->
+    <div id="cat-animation-container" class="mb-4">
+        <div class="cat-wrapper">
+            <div class="cat-scene">
+                <!-- Room elements - background -->
+                <div class="room-background"></div>
+                <div class="room-floor"></div>
+                <div class="room-wall-left"></div>
+                <div class="room-wall-right"></div>
+                
+                <!-- Window frame structure -->
+                <div class="window-frame">
+                    <div class="window-top-frame"></div>
+                    <div class="window-left-frame"></div>
+                    <div class="window-right-frame"></div>
+                    <div class="window-bottom-frame"></div>
+                    <div class="window-crossbar-horizontal"></div>
+                    <div class="window-crossbar-vertical"></div>
+                </div>
+                
+                <!-- Window sill with decorations -->
+                <div class="window-sill">
+                    <div class="plant plant-left">
+                        <div class="plant-pot"></div>
+                        <div class="plant-stems">
+                            <div class="plant-leaf plant-leaf-1"></div>
+                            <div class="plant-leaf plant-leaf-2"></div>
+                            <div class="plant-leaf plant-leaf-3"></div>
+                        </div>
+                    </div>
+                    <div class="plant plant-right">
+                        <div class="plant-pot"></div>
+                        <div class="plant-stems">
+                            <div class="plant-leaf plant-leaf-1"></div>
+                            <div class="plant-leaf plant-leaf-2"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Curtains -->
+                <div class="curtain curtain-left"></div>
+                <div class="curtain curtain-right"></div>
+                
+                <!-- Outside elements -->
+                <div class="outside-scene">
+                    <div class="sky-gradient"></div>
+                    <div class="sun"></div>
+                    <div class="mountains"></div>
+                    <div class="clouds">
+                        <div class="cloud cloud-cat-1"></div>
+                        <div class="cloud cloud-cat-2"></div>
+                        <div class="cloud cloud-cat-3"></div>
+                    </div>
+                    <div class="birds">
+                        <div class="bird bird-1"></div>
+                        <div class="bird bird-2"></div>
+                    </div>
+                    
+                    <!-- Night mode elements -->
+                    <div class="stars">
+                        <div class="star star-1"></div>
+                        <div class="star star-2"></div>
+                        <div class="star star-3"></div>
+                        <div class="star star-4"></div>
+                        <div class="star star-5"></div>
+                        <div class="shooting-star"></div>
+                    </div>
+                    
+                    <!-- Weather effects -->
+                    <div class="rain-container">
+                        <div class="raindrop raindrop-1"></div>
+                        <div class="raindrop raindrop-2"></div>
+                        <div class="raindrop raindrop-3"></div>
+                        <div class="raindrop raindrop-4"></div>
+                        <div class="raindrop raindrop-5"></div>
+                        <div class="raindrop raindrop-6"></div>
+                        <div class="raindrop raindrop-7"></div>
+                    </div>
+                    
+                    <div class="seasonal-decorations">
+                        <div class="snowflake snowflake-1">❄</div>
+                        <div class="snowflake snowflake-2">❄</div>
+                        <div class="snowflake snowflake-3">❅</div>
+                        <div class="snowflake snowflake-4">❆</div>
+                        <div class="snowflake snowflake-5">❄</div>
+                        <div class="snowflake snowflake-6">❅</div>
+                    </div>
+                </div>
+                
+                <!-- Cat -->
+                <div class="cat">
+                    <!-- Cat shadow -->
+                    <div class="cat-shadow"></div>
+                    
+                    <div class="cat-body">
+                        <div class="cat-tail"></div>
+                        <div class="cat-head">
+                            <div class="cat-ears">
+                                <div class="ear ear-left">
+                                    <div class="ear-inner"></div>
+                                </div>
+                                <div class="ear ear-right">
+                                    <div class="ear-inner"></div>
+                                </div>
+                            </div>
+                            <div class="cat-face">
+                                <div class="cat-eyes">
+                                    <div class="eye-socket eye-socket-left">
+                                        <div class="cat-eye cat-eye-left">
+                                            <div class="cat-pupil cat-pupil-left"></div>
+                                            <div class="eye-highlight"></div>
+                                        </div>
+                                        <div class="cat-eyelid cat-eyelid-left"></div>
+                                    </div>
+                                    <div class="eye-socket eye-socket-right">
+                                        <div class="cat-eye cat-eye-right">
+                                            <div class="cat-pupil cat-pupil-right"></div>
+                                            <div class="eye-highlight"></div>
+                                        </div>
+                                        <div class="cat-eyelid cat-eyelid-right"></div>
+                                    </div>
+                                </div>
+                                <div class="cat-nose"></div>
+                                <div class="cat-mouth"></div>
+                                <div class="cat-whiskers">
+                                    <div class="whisker whisker-left-1"></div>
+                                    <div class="whisker whisker-left-2"></div>
+                                    <div class="whisker whisker-left-3"></div>
+                                    <div class="whisker whisker-right-1"></div>
+                                    <div class="whisker whisker-right-2"></div>
+                                    <div class="whisker whisker-right-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cat-paws">
+                            <div class="paw paw-front-left"></div>
+                            <div class="paw paw-front-right"></div>
+                            <div class="paw paw-back-left"></div>
+                            <div class="paw paw-back-right"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Room foreground elements -->
+                <div class="room-decor">
+                    <div class="picture-frame"></div>
+                    <div class="wall-clock"></div>
+                </div>
+                
+                <!-- Interactive elements -->
+                <div class="toy" title="Play with cat"></div>
+                <div class="food-bowl" title="Feed cat"></div>
+                
+                <!-- Controls -->
+                <div class="accessibility-controls">
+                    <button class="accessibility-button" id="reduceMotion" title="Toggle reduced motion">
+                        <span aria-hidden="true">⏸</span>
+                    </button>
+                </div>
+                
+                <button class="weather-toggle" id="toggleWeather" title="Toggle weather">
+                    <span class="weather-icon">☀️</span>
+                </button>
+                
+                <button class="music-toggle" id="toggleMusic" title="Toggle background sounds">
+                    <span class="music-icon">🔇</span>
+                </button>
+            </div>
+            <div class="cat-status">Not watching</div>
+        </div>
+    </div>
+
+    <script>
+        // Cat animation control function
+        let catPurr;
+        let isNightMode = false;
+        let isRaining = false;
+        let isSnowing = false;
+        let isPlayful = false;
+        let backgroundAudio = null;
+        let currentWatchingState = false; // Keep track of the current watching state
+
+        // Setup communication with parent window
+        window.addEventListener('message', function(event) {
+            const data = event.data;
+            
+            // Handle animation state changes
+            if (data.action === 'updateCatAnimation') {
+                // Store the watching state
+                currentWatchingState = data.watching;
+                updateCatAnimation(data.watching);
+            }
+        });
+
+        function updateCatAnimation(watching) {
+            const catWrapper = document.querySelector('.cat-wrapper');
+            const catStatus = document.querySelector('.cat-status');
+
+            // First, remove all possible states
+            catWrapper.classList.remove('not-watching', 'watching', 'playful');
+
+            if (watching) {
+                catWrapper.classList.add('watching');
+                catStatus.textContent = 'Watching folder';
+                
+                // Inform parent about state change
+                window.parent.postMessage({
+                    type: 'catStateChanged',
+                    watching: true
+                }, '*');
+                
+                // Initialize purring sound if not already created
+                if (!catPurr) {
+                    try {
+                        // Try to create purring sound using the Web Audio API
+                        catPurr = createPurringSound();
+                        // Start purring after a short delay for better user experience
+                        setTimeout(() => {
+                            if (currentWatchingState) { // Only start if still watching
+                                catPurr.start();
+                            }
+                        }, 500);
+                    } catch (err) {
+                        console.log('Purring sound could not be initialized:', err);
+                    }
+                } else {
+                    // If purr sound already exists, just start it
+                    try {
+                        catPurr.start();
+                    } catch (err) {
+                        console.log('Could not start purring:', err);
+                    }
+                }
+            } else {
+                catWrapper.classList.add('not-watching');
+                catStatus.textContent = 'Not watching';
+                
+                // Inform parent about state change
+                window.parent.postMessage({
+                    type: 'catStateChanged',
+                    watching: false
+                }, '*');
+                
+                // Stop purring when cat is not watching
+                if (catPurr) {
+                    try {
+                        catPurr.stop();
+                    } catch (err) {
+                        console.log('Could not stop purring:', err);
+                    }
+                }
+            }
+        }
+
+        // Toggle playful state
+        function togglePlayful() {
+            const catWrapper = document.querySelector('.cat-wrapper');
+            
+            if (!isPlayful) {
+                // First remove other states but keep night mode if active
+                catWrapper.classList.remove('not-watching', 'watching');
+                catWrapper.classList.add('playful');
+                document.querySelector('.cat-status').textContent = 'Playful';
+                isPlayful = true;
+                
+                // Auto-revert to previous state after 5 seconds
+                setTimeout(() => {
+                    isPlayful = false;
+                    // Use the stored watching state to return to the correct state
+                    updateCatAnimation(currentWatchingState);
+                }, 5000);
+            }
+        }
+
+        // Toggle day/night mode
+        function toggleDayNight() {
+            const catScene = document.querySelector('.cat-scene');
+            isNightMode = !isNightMode;
+            
+            if (isNightMode) {
+                catScene.classList.add('night-mode');
+                document.querySelector('.weather-icon').textContent = '🌙';
+            } else {
+                catScene.classList.remove('night-mode');
+                document.querySelector('.weather-icon').textContent = '☀️';
+                
+                // Turn off weather effects when switching to day
+                turnOffWeatherEffects();
+            }
+            
+            // Update ambient sound if it's playing
+            if (backgroundAudio && backgroundAudio.playing) {
+                stopAmbientSound();
+                if (isNightMode) {
+                    createNightAmbience(backgroundAudio);
+                } else {
+                    createDayAmbience(backgroundAudio);
+                }
+                backgroundAudio.playing = true;
+            }
+        }
+
+        // Toggle weather effects
+        function toggleWeather() {
+            // Only toggle weather in night mode
+            if (!isNightMode) {
+                toggleDayNight(); // Switch to night mode first
+                setTimeout(toggleRain, 500); // Then add rain effect after a delay
+                return;
+            }
+            
+            if (!isRaining && !isSnowing) {
+                toggleRain();
+            } else if (isRaining) {
+                turnOffWeatherEffects();
+                toggleSnow();
+            } else {
+                turnOffWeatherEffects();
+            }
+        }
+
+        function toggleRain() {
+            const rainContainer = document.querySelector('.rain-container');
+            rainContainer.style.opacity = '1';
+            isRaining = true;
+            document.querySelector('.weather-icon').textContent = '🌧️';
+        }
+
+        function toggleSnow() {
+            const snowContainer = document.querySelector('.seasonal-decorations');
+            snowContainer.style.opacity = '1';
+            isSnowing = true;
+            document.querySelector('.weather-icon').textContent = '❄️';
+        }
+
+        function turnOffWeatherEffects() {
+            const rainContainer = document.querySelector('.rain-container');
+            const snowContainer = document.querySelector('.seasonal-decorations');
+            
+            rainContainer.style.opacity = '0';
+            snowContainer.style.opacity = '0';
+            
+            isRaining = false;
+            isSnowing = false;
+        }
+
+        // Toggle background ambient sound
+        function toggleAmbientSound() {
+            const musicToggle = document.querySelector('.music-toggle .music-icon');
+            
+            if (!backgroundAudio) {
+                try {
+                    // Create background ambient sound
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContext) return;
+                    
+                    const audioCtx = new AudioContext();
+                    backgroundAudio = {
+                        context: audioCtx,
+                        playing: false,
+                        nodes: []
+                    };
+                    
+                    // Create ambient sound based on current mode
+                    if (isNightMode) {
+                        createNightAmbience(backgroundAudio);
+                    } else {
+                        createDayAmbience(backgroundAudio);
+                    }
+                    
+                    backgroundAudio.playing = true;
+                    musicToggle.textContent = '🔊';
+                } catch (err) {
+                    console.log('Audio could not be initialized:', err);
+                    return;
+                }
+            } else if (backgroundAudio.playing) {
+                // Stop current background sound
+                stopAmbientSound();
+                musicToggle.textContent = '🔇';
+            } else {
+                // Restart background sound
+                if (isNightMode) {
+                    createNightAmbience(backgroundAudio);
+                } else {
+                    createDayAmbience(backgroundAudio);
+                }
+                backgroundAudio.playing = true;
+                musicToggle.textContent = '🔊';
+            }
+        }
+
+        function stopAmbientSound() {
+            if (!backgroundAudio || !backgroundAudio.playing) return;
+            
+            backgroundAudio.nodes.forEach(node => {
+                if (node.stop) {
+                    try { node.stop(); } catch (e) {}
+                }
+                if (node.disconnect) {
+                    try { node.disconnect(); } catch (e) {}
+                }
+            });
+            
+            backgroundAudio.nodes = [];
+            backgroundAudio.playing = false;
+        }
+
+        function createDayAmbience(audio) {
+            const { context } = audio;
+            
+            // Gentle wind sound - improved quality
+            const windNoise = context.createBufferSource();
+            const windGain = context.createGain();
+            windGain.gain.value = 0.05; // Lower volume
+            
+            // Create smoother noise
+            const bufferSize = 2 * context.sampleRate;
+            const noiseBuffer = context.createBuffer(2, bufferSize, context.sampleRate); // Stereo for more natural sound
+            
+            // Create smoother noise with pink noise characteristics
+            for (let channel = 0; channel < 2; channel++) {
+                const output = noiseBuffer.getChannelData(channel);
+                let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    
+                    // Pink noise algorithm (smoother than white noise)
+                    b0 = 0.99886 * b0 + white * 0.0555179;
+                    b1 = 0.99332 * b1 + white * 0.0750759;
+                    b2 = 0.96900 * b2 + white * 0.1538520;
+                    b3 = 0.86650 * b3 + white * 0.3104856;
+                    b4 = 0.55000 * b4 + white * 0.5329522;
+                    b5 = -0.7616 * b5 - white * 0.0168980;
+                    output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                    output[i] *= 0.11; // Scaling to keep in range
+                    b6 = white * 0.115926;
+                }
+            }
+            
+            windNoise.buffer = noiseBuffer;
+            windNoise.loop = true;
+            
+            // Better filters for more natural wind sound
+            const lowpassFilter = context.createBiquadFilter();
+            lowpassFilter.type = 'lowpass';
+            lowpassFilter.frequency.value = 400;
+            lowpassFilter.Q.value = 0.5;
+            
+            const highpassFilter = context.createBiquadFilter();
+            highpassFilter.type = 'highpass';
+            highpassFilter.frequency.value = 100;
+            
+            // Add subtle modulation for natural wind variations
+            const lfo = context.createOscillator();
+            const lfoGain = context.createGain();
+            lfo.type = 'sine';
+            lfo.frequency.value = 0.05; // Very slow modulation
+            lfoGain.gain.value = 50; // Modulation amount
+            
+            lfo.connect(lfoGain);
+            lfoGain.connect(lowpassFilter.frequency);
+            
+            windNoise.connect(highpassFilter);
+            highpassFilter.connect(lowpassFilter);
+            lowpassFilter.connect(windGain);
+            windGain.connect(context.destination);
+            
+            lfo.start();
+            windNoise.start();
+            
+            audio.nodes.push(windNoise, lowpassFilter, highpassFilter, lfo, lfoGain, windGain);
+            
+            // Bird chirps periodically - improved quality
+            const birdInterval = setInterval(() => {
+                if (audio.playing && !isNightMode) {
+                    createBirdChirp(audio);
+                }
+            }, 5000 + Math.random() * 3000); // More random timing
+            
+            // Store interval for cleanup
+            audio.birdInterval = birdInterval;
+            audio.nodes.push({ stop: () => clearInterval(birdInterval) });
+        }
+
+        function createBirdChirp(audio) {
+            const { context } = audio;
+            
+            // Create more realistic bird chirps with multiple notes
+            const numNotes = 2 + Math.floor(Math.random() * 3); // 2-4 notes
+            
+            for (let i = 0; i < numNotes; i++) {
+                setTimeout(() => {
+                    if (!audio.playing) return;
+                    
+                    const chirp = context.createOscillator();
+                    const chirpGain = context.createGain();
+                    const chirpFilter = context.createBiquadFilter();
+                    
+                    // Randomize parameters for natural variation
+                    const baseFreq = 2000 + Math.random() * 1000;
+                    const duration = 0.05 + Math.random() * 0.1;
+                    
+                    chirpFilter.type = 'bandpass';
+                    chirpFilter.frequency.value = baseFreq;
+                    chirpFilter.Q.value = 2.0;
+                    
+                    chirp.type = 'sine';
+                    chirp.frequency.value = baseFreq;
+                    // Small frequency slide
+                    chirp.frequency.linearRampToValueAtTime(
+                        baseFreq * (1 + Math.random() * 0.1),
+                        context.currentTime + duration
+                    );
+                    
+                    chirpGain.gain.value = 0;
+                    
+                    // Connect nodes
+                    chirp.connect(chirpFilter);
+                    chirpFilter.connect(chirpGain);
+                    chirpGain.connect(context.destination);
+                    
+                    // More natural envelope for chirp sound
+                    chirpGain.gain.setValueAtTime(0, context.currentTime);
+                    chirpGain.gain.linearRampToValueAtTime(0.03, context.currentTime + duration * 0.2);
+                    chirpGain.gain.linearRampToValueAtTime(0, context.currentTime + duration);
+                    
+                    chirp.start();
+                    
+                    setTimeout(() => {
+                        chirp.stop();
+                        chirp.disconnect();
+                        chirpFilter.disconnect();
+                        chirpGain.disconnect();
+                    }, duration * 1000 + 50);
+                    
+                }, i * 150 + Math.random() * 50); // Timing between chirps
+            }
+        }
+
+        function createNightAmbience(audio) {
+            const { context } = audio;
+            
+            // Improved night ambience with gentle wind and occasional owl sounds
+            
+            // Gentle wind base - lower frequency for night
+            const windNoise = context.createBufferSource();
+            const windGain = context.createGain();
+            windGain.gain.value = 0.015; // Very quiet at night
+            
+            // Create smoother noise
+            const bufferSize = 2 * context.sampleRate;
+            const noiseBuffer = context.createBuffer(2, bufferSize, context.sampleRate);
+            
+            // Create smoother noise with pink noise characteristics
+            for (let channel = 0; channel < 2; channel++) {
+                const output = noiseBuffer.getChannelData(channel);
+                let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    
+                    b0 = 0.99886 * b0 + white * 0.0555179;
+                    b1 = 0.99332 * b1 + white * 0.0750759;
+                    b2 = 0.96900 * b2 + white * 0.1538520;
+                    b3 = 0.86650 * b3 + white * 0.3104856;
+                    b4 = 0.55000 * b4 + white * 0.5329522;
+                    b5 = -0.7616 * b5 - white * 0.0168980;
+                    output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                    output[i] *= 0.11;
+                    b6 = white * 0.115926;
+                }
+            }
+            
+            windNoise.buffer = noiseBuffer;
+            windNoise.loop = true;
+            
+            // Night wind has lower frequencies
+            const lowpassFilter = context.createBiquadFilter();
+            lowpassFilter.type = 'lowpass';
+            lowpassFilter.frequency.value = 200;
+            lowpassFilter.Q.value = 0.7;
+            
+            windNoise.connect(lowpassFilter);
+            lowpassFilter.connect(windGain);
+            windGain.connect(context.destination);
+            windNoise.start();
+            
+            audio.nodes.push(windNoise, lowpassFilter, windGain);
+            
+            // Create cricket sounds - more natural
+            const createCricketChirp = () => {
+                if (!audio.playing || !isNightMode) return;
+                
+                const cricket = context.createOscillator();
+                const cricketGain = context.createGain();
+                const cricketFilter = context.createBiquadFilter();
+                
+                cricket.type = 'triangle'; // Softer sound than sawtooth
+                cricket.frequency.value = 3800 + Math.random() * 400; // Slightly randomized
+                
+                cricketFilter.type = 'bandpass';
+                cricketFilter.frequency.value = cricket.frequency.value;
+                cricketFilter.Q.value = 10;
+                
+                cricketGain.gain.value = 0;
+                
+                cricket.connect(cricketFilter);
+                cricketFilter.connect(cricketGain);
+                cricketGain.connect(context.destination);
+                
+                cricket.start();
+                
+                // Number of chirps in this sequence
+                const numChirps = 2 + Math.floor(Math.random() * 3);
+                
+                for (let i = 0; i < numChirps; i++) {
+                    setTimeout(() => {
+                        if (!audio.playing || !isNightMode) return;
+                        // Create the cricket chirp envelope
+                        cricketGain.gain.setValueAtTime(0.001, context.currentTime);
+                        cricketGain.gain.exponentialRampToValueAtTime(0.015, context.currentTime + 0.05);
+                        cricketGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.15);
+                    }, i * 200);
+                }
+                
+                // Stop and clean up
+                setTimeout(() => {
+                    cricket.stop();
+                    cricket.disconnect();
+                    cricketFilter.disconnect();
+                    cricketGain.disconnect();
+                }, numChirps * 200 + 200);
+            };
+            
+            // Random cricket sounds
+            const cricketInterval = setInterval(() => {
+                if (Math.random() > 0.3) { // 70% chance of cricket chirping
+                    createCricketChirp();
+                }
+            }, 3000 + Math.random() * 5000);
+            
+            // Occasional owl hoot
+            const createOwlHoot = () => {
+                if (!audio.playing || !isNightMode) return;
+                
+                const owl = context.createOscillator();
+                const owlGain = context.createGain();
+                const owlFilter = context.createBiquadFilter();
+                
+                owl.type = 'sine';
+                owl.frequency.value = 280 + Math.random() * 40;
+                
+                owlFilter.type = 'lowpass';
+                owlFilter.frequency.value = 800;
+                
+                owlGain.gain.value = 0;
+                
+                owl.connect(owlFilter);
+                owlFilter.connect(owlGain);
+                owlGain.connect(context.destination);
+                
+                owl.start();
+                
+                // Create the owl hoot envelope
+                owlGain.gain.setValueAtTime(0, context.currentTime);
+                owlGain.gain.linearRampToValueAtTime(0.03, context.currentTime + 0.2);
+                owlGain.gain.linearRampToValueAtTime(0.02, context.currentTime + 0.8);
+                owlGain.gain.linearRampToValueAtTime(0, context.currentTime + 1.2);
+                
+                // Sometimes do a double hoot
+                if (Math.random() > 0.5) {
+                    setTimeout(() => {
+                        if (!audio.playing || !isNightMode) return;
+                        owlGain.gain.setValueAtTime(0, context.currentTime);
+                        owlGain.gain.linearRampToValueAtTime(0.025, context.currentTime + 0.2);
+                        owlGain.gain.linearRampToValueAtTime(0, context.currentTime + 1);
+                    }, 1500);
+                }
+                
+                // Stop and clean up
+                setTimeout(() => {
+                    owl.stop();
+                    owl.disconnect();
+                    owlFilter.disconnect();
+                    owlGain.disconnect();
+                }, 3000);
+            };
+            
+            // Rare owl sounds
+            const owlInterval = setInterval(() => {
+                if (Math.random() > 0.7) { // 30% chance of owl hooting
+                    createOwlHoot();
+                }
+            }, 30000 + Math.random() * 60000);
+            
+            // Store intervals for cleanup
+            audio.nodes.push(
+                { stop: () => clearInterval(cricketInterval) },
+                { stop: () => clearInterval(owlInterval) }
+            );
+        }
+
+        // Function to create purring sound - improved quality
+        function createPurringSound() {
+            // Only create the sound if Web Audio API is available
+            if (!window.AudioContext && !window.webkitAudioContext) {
+                throw new Error('Web Audio API not supported');
+            }
+            
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioCtx = new AudioContext();
+            
+            // Create a more complex and natural purring sound
+            // Main oscillator for the base purr tone
+            const oscillator = audioCtx.createOscillator();
+            const mainGain = audioCtx.createGain();
+            
+            // More natural purr using multiple frequencies
+            oscillator.type = 'triangle'; // Softer than sine
+            oscillator.frequency.setValueAtTime(35, audioCtx.currentTime); // Lower frequency for natural sound
+            
+            // Add warmth with subtle distortion
+            const lowpassFilter = audioCtx.createBiquadFilter();
+            lowpassFilter.type = 'lowpass';
+            lowpassFilter.frequency.value = 200;
+            lowpassFilter.Q.value = 0.8;
+            
+            // Breathing modulation for the purr rhythm
+            const breathLFO = audioCtx.createOscillator();
+            const breathGain = audioCtx.createGain();
+            breathLFO.type = 'sine';
+            breathLFO.frequency.value = 0.35; // Breathing rate
+            breathGain.gain.value = 0.15;
+            
+            // Purr vibration - faster modulation for the actual purr
+            const purrLFO = audioCtx.createOscillator();
+            const purrGain = audioCtx.createGain();
+            purrLFO.type = 'sine';
+            purrLFO.frequency.value = 25;  // Purring rate - cats purr at 25-150 Hz
+            purrGain.gain.value = 0.2;
+            
+            // Connect the purring vibration and breathing modulation to gain
+            breathLFO.connect(breathGain);
+            purrLFO.connect(purrGain);
+            
+            // Combine the modulations
+            const dynamicsGain = audioCtx.createGain();
+            dynamicsGain.gain.value = 1.0;
+            breathGain.connect(dynamicsGain.gain);
+            purrGain.connect(dynamicsGain.gain);
+            
+            // Connect the main oscillator through the filters
+            oscillator.connect(lowpassFilter);
+            lowpassFilter.connect(dynamicsGain);
+            dynamicsGain.connect(mainGain);
+            
+            // Set overall volume - quite low to be ambient
+            mainGain.gain.value = 0.04;
+            mainGain.connect(audioCtx.destination);
+            
+            // Start the LFOs
+            breathLFO.start();
+            purrLFO.start();
+            
+            // Return the controller object
+            let isRunning = false;
+            
+            return {
+                start: function() {
+                    try {
+                        if (!isRunning) {
+                            oscillator.start();
+                            isRunning = true;
+                        }
+                    } catch (e) {
+                        console.log('Error starting purr:', e);
+                    }
+                },
+                stop: function() {
+                    try {
+                        if (isRunning) {
+                            // Fade out gently
+                            mainGain.gain.setValueAtTime(mainGain.gain.value, audioCtx.currentTime);
+                            mainGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.0);
+                            
+                            // Stop after fade out
+                            setTimeout(() => {
+                                try {
+                                    oscillator.stop();
+                                    breathLFO.stop();
+                                    purrLFO.stop();
+                                    isRunning = false;
+                                } catch (e) {
+                                    // Already stopped
+                                }
+                            }, 1100);
+                        }
+                    } catch (e) {
+                        console.log('Error stopping purr:', e);
+                    }
+                }
+            };
+        }
+
+        // Reduced motion accessibility
+        function toggleReducedMotion() {
+            document.body.classList.toggle('reduced-motion');
+            const button = document.getElementById('reduceMotion');
+            
+            if (document.body.classList.contains('reduced-motion')) {
+                button.querySelector('span').textContent = '▶️';
+                button.title = 'Enable animations';
+            } else {
+                button.querySelector('span').textContent = '⏸';
+                button.title = 'Reduce animations';
+            }
+        }
+
+        // Initialize the cat in not-watching state
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCatAnimation(false);
+            
+            // Add event listeners for interactive elements
+            document.querySelector('.toy').addEventListener('click', togglePlayful);
+            document.querySelector('.food-bowl').addEventListener('click', () => {
+                // Add food animation or interaction here
+                const catWrapper = document.querySelector('.cat-wrapper');
+                const currentState = catWrapper.classList.contains('watching') ? 'watching' : 
+                                     catWrapper.classList.contains('playful') ? 'playful' : 'not-watching';
+                
+                // Briefly show the cat in alert state
+                catWrapper.classList.remove('not-watching', 'watching', 'playful');
+                catWrapper.classList.add('watching');
+                document.querySelector('.cat-status').textContent = 'Eating...';
+                
+                // Return to previous state after "eating"
+                setTimeout(() => {
+                    catWrapper.classList.remove('watching');
+                    catWrapper.classList.add(currentState);
+                    document.querySelector('.cat-status').textContent = 
+                        currentState === 'watching' ? 'Watching folder' : 
+                        currentState === 'playful' ? 'Playful' : 'Not watching';
+                }, 2000);
+            });
+            
+            document.getElementById('toggleWeather').addEventListener('click', toggleWeather);
+            document.getElementById('toggleMusic').addEventListener('click', toggleAmbientSound);
+            document.getElementById('reduceMotion').addEventListener('click', toggleReducedMotion);
+            
+            // Auto day/night cycle
+            setInterval(() => {
+                const now = new Date();
+                const hour = now.getHours();
+                
+                // Auto switch to night mode in the evening/night
+                if ((hour >= 18 || hour < 6) && !isNightMode) {
+                    toggleDayNight();
+                } 
+                // Auto switch to day mode during the day
+                else if (hour >= 6 && hour < 18 && isNightMode) {
+                    toggleDayNight();
+                }
+            }, 60000); // Check every minute
+            
+            // Set initial day/night mode based on time
+            const hour = new Date().getHours();
+            if (hour >= 18 || hour < 6) {
+                toggleDayNight();
+            }
+            
+            // Tell the parent window that the iframe is loaded
+            window.parent.postMessage({type: 'catAnimationLoaded'}, '*');
+        });
+    </script>
+</body>
+</html>

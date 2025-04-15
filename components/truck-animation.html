@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truck Animation</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="../styles/truck.css" rel="stylesheet">
+    <style>
+        body { 
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- Truck animation scene -->
+    <div class="truck-scene minimized">
+        <div class="scene-background">
+            <!-- Sky and environment elements -->
+            <div class="sky"></div>
+            <div class="mountains"></div>
+            <div class="road"></div>
+            <div class="trees">
+                <div class="tree tree-1"></div>
+                <div class="tree tree-2"></div>
+                <div class="tree tree-3"></div>
+            </div>
+            <div class="buildings">
+                <div class="building building-1"></div>
+                <div class="building building-2"></div>
+            </div>
+            <div class="clouds">
+                <div class="cloud cloud-1"></div>
+                <div class="cloud cloud-2"></div>
+                <div class="cloud cloud-3"></div>
+            </div>
+        </div>
+
+        <!-- Truck container -->
+        <div class="truck-container">
+            <div class="truck">
+                <div class="truck-body">
+                    <div class="truck-cabin">
+                        <div class="window"></div>
+                    </div>
+                    <div class="truck-cargo">
+                        <div class="whatsapp-logo"></div>
+                    </div>
+                </div>
+                <div class="truck-wheels">
+                    <div class="wheel wheel-front"></div>
+                    <div class="wheel wheel-back"></div>
+                </div>
+                <div class="truck-lights">
+                    <div class="light light-front"></div>
+                    <div class="light light-back"></div>
+                </div>
+            </div>
+            <div class="delivery-complete hidden">
+                <div class="package"></div>
+                <div class="package-icon"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Setup communication with parent window
+        window.addEventListener('message', function(event) {
+            const data = event.data;
+            
+            // Handle animation state changes
+            if (data.action === 'updateTruckAnimation') {
+                updateTruckAnimation(data.state, data.percent);
+            } else if (data.action === 'showTruck') {
+                const truckScene = document.querySelector('.truck-scene');
+                truckScene.classList.remove('minimized');
+                truckScene.classList.add('active');
+            } else if (data.action === 'hideTruck') {
+                const truckScene = document.querySelector('.truck-scene');
+                truckScene.classList.add('minimized');
+                truckScene.classList.remove('active');
+            }
+        });
+
+        // Truck animation state manager
+        function updateTruckAnimation(state, percent = 0) {
+            const truckScene = document.querySelector('.truck-scene');
+            const truck = document.querySelector('.truck');
+            const deliveryComplete = document.querySelector('.delivery-complete');
+
+            // Remove all state classes first
+            truckScene.classList.remove(
+                'transfer-starting',
+                'transfer-progress',
+                'transfer-completing',
+                'transfer-active',
+                'delivery-completed'
+            );
+
+            // Calculate truck position based on progress percentage
+            if (truck) {
+                // Reset truck position for new transfers
+                if (state === 'starting') {
+                    truck.style.left = '0%';
+                    deliveryComplete.classList.add('hidden');
+                }
+
+                // Move the truck based on progress
+                if (state === 'progress' && percent > 0) {
+                    // Move truck from 0% to 80% of the container width
+                    const truckPosition = Math.min(80, percent * 0.8);
+                    truck.style.left = `${truckPosition}%`;
+
+                    // Adjust wheel animation speed based on transfer speed
+                    const speedFactor = parseFloat(window.parent.document.getElementById('transfer-speed').textContent) || 1;
+                    const baseSpeed = 1; // Base animation speed in seconds
+                    const wheelSpeed = Math.max(0.2, baseSpeed - (speedFactor * 0.05));
+
+                    document.querySelectorAll('.wheel').forEach(wheel => {
+                        wheel.style.animationDuration = `${wheelSpeed}s`;
+                    });
+
+                    truckScene.classList.add('transfer-active', 'transfer-progress');
+                }
+
+                // Show delivery animation when complete
+                if (state === 'completing') {
+                    truck.style.left = '85%';
+                    truckScene.classList.add('transfer-active', 'transfer-completing');
+                }
+
+                // Show delivery complete animation
+                if (state === 'complete') {
+                    truck.style.left = '100%';
+                    deliveryComplete.classList.remove('hidden');
+                    truckScene.classList.add('delivery-completed');
+                }
+
+                // Reset animation when idle
+                if (state === 'idle') {
+                    // Leave the truck in its final position
+                }
+            }
+        }
+
+        // Tell the parent window that the iframe is loaded
+        window.parent.postMessage({type: 'truckAnimationLoaded'}, '*');
+    </script>
+</body>
+</html>

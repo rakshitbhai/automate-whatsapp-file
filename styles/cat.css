@@ -1,0 +1,1951 @@
+/* Cat animation styles */
+#cat-animation-container {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0 30px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(to bottom, #f5f9fc, #e8f4f8);
+}
+
+.cat-wrapper {
+    position: relative;
+    width: 300px;
+    height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.cat-scene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+/* Room elements */
+.room-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #f0f0f0, #e8e8e8);
+    z-index: 0;
+}
+
+.room-floor {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: linear-gradient(to bottom, #d4c0a1, #c0b090);
+    z-index: 1;
+}
+
+.room-wall-left, .room-wall-right {
+    position: absolute;
+    top: 0;
+    width: 60px;
+    height: 100%;
+    background: linear-gradient(to right, #e5e5e5, #d8d8d8);
+    z-index: 1;
+}
+
+.room-wall-left {
+    left: 0;
+}
+
+.room-wall-right {
+    right: 0;
+}
+
+/* Window frame structure */
+.window-frame {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 180px;
+    height: 140px;
+    z-index: 2;
+}
+
+.window-top-frame, .window-bottom-frame {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background-color: #8b4513;
+    z-index: 3;
+}
+
+.window-top-frame {
+    top: 0;
+    border-radius: 8px 8px 0 0;
+}
+
+.window-bottom-frame {
+    bottom: 0;
+    border-radius: 0 0 8px 8px;
+}
+
+.window-left-frame, .window-right-frame {
+    position: absolute;
+    top: 0;
+    width: 10px;
+    height: 100%;
+    background-color: #8b4513;
+    z-index: 3;
+}
+
+.window-left-frame {
+    left: 0;
+    border-radius: 8px 0 0 8px;
+}
+
+.window-right-frame {
+    right: 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.window-crossbar-horizontal {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background-color: #8b4513;
+    z-index: 3;
+    transform: translateY(-50%);
+}
+
+.window-crossbar-vertical {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 6px;
+    height: 100%;
+    background-color: #8b4513;
+    z-index: 3;
+    transform: translateX(-50%);
+}
+
+/* Window sill with decorations */
+.window-sill {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 20px;
+    background: linear-gradient(to bottom, #d4c0a1, #c0b090);
+    border-top: 3px solid #e5d6b9;
+    z-index: 2;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Plants on window sill */
+.plant {
+    position: absolute;
+    bottom: 0;
+    width: 30px;
+    height: 40px;
+    z-index: 3;
+}
+
+.plant-left {
+    left: 20px;
+}
+
+.plant-right {
+    right: 20px;
+}
+
+.plant-pot {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 16px;
+    background: linear-gradient(to top, #964b00, #c47222);
+    border-radius: 0 0 5px 5px;
+    z-index: 3;
+}
+
+.plant-stems {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 30px;
+}
+
+.plant-leaf {
+    position: absolute;
+    width: 15px;
+    height: 20px;
+    background-color: #4a8c38;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    z-index: 3;
+}
+
+.plant-leaf-1 {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) rotate(-5deg);
+}
+
+.plant-leaf-2 {
+    top: 5px;
+    left: 30%;
+    transform: translateX(-50%) rotate(-25deg) scale(0.8);
+}
+
+.plant-leaf-3 {
+    top: 5px;
+    left: 70%;
+    transform: translateX(-50%) rotate(25deg) scale(0.8);
+}
+
+.plant-right .plant-leaf-1 {
+    transform: translateX(-50%) rotate(5deg);
+}
+
+/* Curtains */
+.curtain {
+    position: absolute;
+    top: 10px;
+    width: 50px;
+    height: 110px;
+    background: linear-gradient(to right, #f0d9d5, #e4c6c1);
+    z-index: 4;
+    border-bottom: 5px solid #e4c6c1;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.curtain-left {
+    left: 20px;
+    border-right: 3px solid #e4c6c1;
+    border-radius: 0 0 15px 0;
+}
+
+.curtain-right {
+    right: 20px;
+    border-left: 3px solid #e4c6c1;
+    border-radius: 0 0 0 15px;
+}
+
+/* Outside scene elements */
+.outside-scene {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 180px;
+    height: 140px;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.sky-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #87CEEB, #B0E0E6);
+    z-index: 0;
+}
+
+.mountains {
+    position: absolute;
+    bottom: 40%;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    background: linear-gradient(165deg, #6a8caf 25%, #4b6cb7 100%);
+    clip-path: polygon(0% 100%, 10% 60%, 20% 80%, 30% 50%, 40% 70%, 50% 40%, 60% 80%, 70% 60%, 80% 90%, 90% 70%, 100% 90%, 100% 100%);
+    z-index: 1;
+}
+
+/* Sun with animation */
+.sun {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    width: 30px;
+    height: 30px;
+    background: radial-gradient(circle, #ffe259, #ffa751);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255, 226, 89, 0.7);
+    z-index: 1;
+    animation: sun-glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes sun-glow {
+    from {
+        box-shadow: 0 0 20px rgba(255, 226, 89, 0.5);
+    }
+    to {
+        box-shadow: 0 0 30px rgba(255, 226, 89, 0.8);
+    }
+}
+
+/* Clouds with better styling */
+.cloud {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    filter: blur(1px);
+}
+
+.cloud::before, 
+.cloud::after {
+    content: '';
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+}
+
+.cloud::before {
+    width: 30px;
+    height: 30px;
+    bottom: 5px;
+    left: 10px;
+}
+
+.cloud::after {
+    width: 20px;
+    height: 20px;
+    bottom: 5px;
+    right: 10px;
+}
+
+.cloud-cat-1 {
+    top: 25px;
+    left: -60px;
+    width: 60px;
+    height: 20px;
+    animation: drift 30s linear infinite;
+}
+
+.cloud-cat-2 {
+    top: 50px;
+    left: -40px;
+    width: 40px;
+    height: 15px;
+    animation: drift 25s linear infinite;
+    animation-delay: 5s;
+}
+
+.cloud-cat-3 {
+    top: 35px;
+    left: -70px;
+    width: 50px;
+    height: 18px;
+    animation: drift 35s linear infinite;
+    animation-delay: 12s;
+}
+
+@keyframes drift {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(250px);
+    }
+}
+
+/* Birds */
+.birds {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.bird {
+    position: absolute;
+    width: 15px;
+    height: 8px;
+    z-index: 1;
+}
+
+.bird::before,
+.bird::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 3px;
+    background-color: #333;
+    top: 0;
+}
+
+.bird::before {
+    left: 0;
+    transform-origin: right center;
+    animation: wing-left 0.8s ease-in-out infinite;
+}
+
+.bird::after {
+    right: 0;
+    transform-origin: left center;
+    animation: wing-right 0.8s ease-in-out infinite;
+}
+
+@keyframes wing-left {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(30deg);
+    }
+}
+
+@keyframes wing-right {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(-30deg);
+    }
+}
+
+.bird-1 {
+    top: 30px;
+    left: -20px;
+    animation: bird-flight-1 20s linear infinite;
+}
+
+.bird-2 {
+    top: 50px;
+    left: -30px;
+    animation: bird-flight-2 25s linear infinite;
+    animation-delay: 10s;
+}
+
+@keyframes bird-flight-1 {
+    0% {
+        transform: translateX(0) translateY(0) scale(0.7);
+    }
+    10% {
+        transform: translateX(30px) translateY(-10px) scale(0.8);
+    }
+    40% {
+        transform: translateX(100px) translateY(5px) scale(1);
+    }
+    70% {
+        transform: translateX(170px) translateY(-15px) scale(0.9);
+    }
+    100% {
+        transform: translateX(250px) translateY(-5px) scale(0.7);
+    }
+}
+
+@keyframes bird-flight-2 {
+    0% {
+        transform: translateX(0) translateY(0) scale(0.6);
+    }
+    20% {
+        transform: translateX(50px) translateY(8px) scale(0.7);
+    }
+    50% {
+        transform: translateX(120px) translateY(-10px) scale(0.8);
+    }
+    80% {
+        transform: translateX(190px) translateY(5px) scale(0.7);
+    }
+    100% {
+        transform: translateX(250px) translateY(-8px) scale(0.6);
+    }
+}
+
+/* Room decorations */
+.room-decor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.picture-frame {
+    position: absolute;
+    top: 40px;
+    left: 15px;
+    width: 30px;
+    height: 40px;
+    background-color: #ffebcd;
+    border: 3px solid #8b4513;
+    z-index: 3;
+    transform: rotate(-5deg);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.picture-frame::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    background: linear-gradient(45deg, #5d8aa8, #89cff0);
+    z-index: -1;
+}
+
+.wall-clock {
+    position: absolute;
+    top: 50px;
+    right: 15px;
+    width: 20px;
+    height: 20px;
+    background-color: #f5f5f5;
+    border: 2px solid #8b4513;
+    border-radius: 50%;
+    z-index: 3;
+}
+
+.wall-clock::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 6px;
+    background-color: #333;
+    transform: translateX(-50%) translateY(-100%);
+    transform-origin: bottom center;
+    animation: clock-hand 30s linear infinite;
+}
+
+.wall-clock::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 4px;
+    background-color: #333;
+    transform: translateX(-50%) translateY(-100%) rotate(90deg);
+    transform-origin: bottom center;
+    animation: clock-hand 3600s linear infinite;
+}
+
+@keyframes clock-hand {
+    from {
+        transform: translateX(-50%) translateY(-100%) rotate(0deg);
+    }
+    to {
+        transform: translateX(-50%) translateY(-100%) rotate(360deg);
+    }
+}
+
+/* Cat shadow */
+.cat-shadow {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 15px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 50%;
+    filter: blur(3px);
+    z-index: 2;
+    transition: all 0.5s ease;
+}
+
+/* Cat animation states adjusted for new environment */
+.cat-wrapper.not-watching .cat-shadow {
+    width: 65px;
+    opacity: 0.8;
+    transform: translateX(-60%);
+}
+
+.cat-wrapper.watching .cat-shadow {
+    width: 90px;
+    opacity: 0.2;
+}
+
+/* Cat body and animation styles - enhanced for more realistic appearance */
+.cat {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 70px;
+    z-index: 5;
+    transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cat-body {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #ffdfb8, #f0c28e, #e0b382); /* Enhanced gradient fur */
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.6s ease;
+}
+
+.cat-body::before {
+    /* Enhanced fur texture */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(ellipse at center, transparent 0%, transparent 70%, rgba(0,0,0,0.05) 100%),
+        linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.05) 100%);
+    border-radius: inherit;
+}
+
+.cat-head {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 55px; /* Slightly wider for cuteness */
+    height: 50px;
+    background: linear-gradient(to bottom, #ffdfb8, #f0c28e); /* Match body gradient */
+    border-radius: 50% 50% 45% 45% / 65% 65% 40% 40%; /* Rounder cheeks for cuteness */
+    z-index: 6;
+    transition: all 0.6s ease;
+}
+
+.cat-head::before {
+    /* Add subtle shading for more dimension */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,0.2) 0%, transparent 70%);
+    border-radius: inherit;
+}
+
+/* Cat ears */
+.cat-ears {
+    position: absolute;
+    width: 100%;
+    top: -12px; /* Positioned higher */
+    left: 0;
+}
+
+.ear {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent; /* Wider ears */
+    border-right: 12px solid transparent;
+    border-bottom: 22px solid #f0c28e; /* Match body color */
+    top: -5px;
+    transition: all 0.6s ease;
+}
+
+.ear-inner {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 13px solid #e5ac74; /* Darker for inner ear */
+    top: 3px;
+    left: -7px;
+}
+
+.ear-left {
+    left: 4px;
+    transform: rotate(-20deg);
+    transform-origin: bottom center;
+}
+
+.ear-right {
+    right: 4px;
+    transform: rotate(20deg);
+    transform-origin: bottom center;
+}
+
+/* Cat face features */
+.cat-face {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.cat-eyes {
+    position: absolute;
+    width: 100%;
+    top: 15px;
+    display: flex;
+    justify-content: space-around;
+}
+
+.eye-socket {
+    position: relative;
+    width: 15px; /* Slightly wider */
+    height: 13px;
+}
+
+.cat-eye {
+    position: absolute;
+    width: 15px; /* Bigger eyes for cuteness */
+    height: 13px;
+    background: #ffffff;
+    border-radius: 50% / 55% 55% 45% 45%; /* More almond shaped */
+    overflow: hidden;
+    transition: all 0.4s ease;
+    box-shadow: inset 0 0 3px rgba(0,0,0,0.2); /* Inner shadow for depth */
+}
+
+.cat-pupil {
+    position: absolute;
+    width: 8px;
+    height: 11px;
+    background: linear-gradient(to bottom, #000, #222); /* More realistic pupil gradient */
+    border-radius: 50%;
+    top: 1px;
+    left: 3px;
+    transition: all 0.4s ease;
+}
+
+.cat-pupil-left, .cat-pupil-right {
+    animation: pupil-move 6s ease-in-out infinite alternate;
+}
+
+@keyframes pupil-move {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(1px, -1px); }
+    50% { transform: translate(-1px, 1px); }
+    75% { transform: translate(-1px, -1px); }
+}
+
+/* Multiple eye highlights for more realism */
+.eye-highlight {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    right: 3px;
+    opacity: 0.9;
+}
+
+.eye-highlight::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    top: 5px;
+    left: -1px;
+    opacity: 0.7;
+}
+
+.cat-eyelid {
+    position: absolute;
+    width: 100%;
+    height: 50%;
+    background-color: #ffdfb8; /* Match body color */
+    top: -50%;
+    left: 0;
+    border-radius: 0 0 60% 60%;
+    z-index: 7;
+    transition: all 0.2s ease;
+}
+
+/* More charming blinking animation */
+@keyframes blink-cat {
+    0%, 90%, 100% { transform: translateY(-50%); }
+    95% { transform: translateY(0); }
+}
+
+.cat-eyelid-left {
+    animation: blink-cat 4s infinite;
+}
+
+.cat-eyelid-right {
+    animation: blink-cat 4s infinite;
+    animation-delay: 0.1s;
+}
+
+/* Cuter nose and mouth */
+.cat-nose {
+    position: absolute;
+    width: 8px;
+    height: 6px;
+    background: linear-gradient(to bottom, #ffa5a5, #ff9d81); /* Gradient for dimension */
+    border-radius: 45% 45% 60% 60%; /* Heart-like shape */
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.cat-mouth {
+    position: absolute;
+    width: 10px;
+    height: 5px;
+    border-bottom: 2px solid #da9371;
+    border-radius: 0 0 50% 50%;
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Small smile line for extra cuteness */
+.cat-mouth::before {
+    content: '';
+    position: absolute;
+    width: 5px;
+    height: 2px;
+    border-top: 1px solid #da9371;
+    border-radius: 50% 50% 0 0;
+    top: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.5;
+}
+
+/* Enhanced whiskers */
+.whisker {
+    position: absolute;
+    width: 18px; /* Longer whiskers */
+    height: 1.2px; /* Slightly thicker */
+    background: #d1bbb1;
+    top: 28px;
+    transition: all 0.3s ease;
+}
+
+.whisker-left-1 {
+    left: 2px;
+    transform: rotate(10deg);
+}
+
+.whisker-left-2 {
+    left: 3px;
+    top: 31px;
+    transform: rotate(0deg);
+}
+
+.whisker-left-3 {
+    left: 2px;
+    top: 34px;
+    transform: rotate(-10deg);
+}
+
+.whisker-right-1 {
+    right: 2px;
+    transform: rotate(-10deg);
+}
+
+.whisker-right-2 {
+    right: 3px;
+    top: 31px;
+    transform: rotate(0deg);
+}
+
+.whisker-right-3 {
+    right: 2px;
+    top: 34px;
+    transform: rotate(10deg);
+}
+
+/* Improved cat tail */
+.cat-tail {
+    position: absolute;
+    width: 45px; /* Longer tail */
+    height: 10px;
+    background: linear-gradient(to right, #ffdfb8, #f0c28e, #e0b382); /* Gradient tail */
+    border-radius: 5px 15px 15px 5px; /* Rounded tip */
+    bottom: 5px;
+    right: -25px;
+    transform-origin: left center;
+    transform: rotate(-20deg);
+    z-index: 4;
+    transition: all 0.5s ease;
+}
+
+.cat-tail::after {
+    /* Tail tip highlight */
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 15px;
+    height: 10px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.2));
+    border-radius: 0 15px 15px 0;
+}
+
+/* Cuter paws */
+.cat-paws {
+    position: absolute;
+    width: 100%;
+    bottom: -5px;
+    z-index: 4;
+}
+
+.paw {
+    position: absolute;
+    width: 14px; /* Slightly larger paws */
+    height: 11px;
+    background: #ffdfb8; /* Match body color */
+    border-radius: 50%;
+    bottom: 0;
+    transition: all 0.5s ease;
+}
+
+.paw::after {
+    /* Paw pads - more defined */
+    content: '';
+    position: absolute;
+    width: 7px;
+    height: 5px;
+    background: linear-gradient(to bottom, #ffa5a5, #ff9d81); /* Pink paw pads */
+    border-radius: 50%;
+    bottom: -1px;
+    left: 3px;
+    opacity: 0.8;
+}
+
+/* Toe beans for extra cuteness! */
+.paw::before {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 3px;
+    top: 0;
+    left: 2px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.paw-front-left {
+    left: 15px;
+}
+
+.paw-front-right {
+    left: 35px;
+}
+
+.paw-back-left {
+    left: 50px;
+}
+
+.paw-back-right {
+    left: 65px;
+}
+
+/* Cat status text */
+.cat-status {
+    font-weight: 600;
+    margin-top: 15px;
+    font-size: 0.95rem;
+    color: #64748b;
+    transition: all 0.4s ease;
+}
+
+/* SLEEPING STATE - Not watching - Even cuter curled up position */
+.cat-wrapper.not-watching .cat {
+    transform: translateX(-30%) rotate(-15deg);
+    bottom: 35px;
+}
+
+.cat-wrapper.not-watching .cat-body {
+    border-radius: 60% 40% 60% 40% / 60% 60% 40% 40%;
+    background: linear-gradient(135deg, #ffdfb8, #f0c28e, #e0b382); /* Enhanced gradient for sleeping */
+    height: 60px; /* Smaller height when curled */
+    animation: breathing 4s ease-in-out infinite; /* Breathing animation */
+}
+
+@keyframes breathing {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05) translateY(-2px); }
+}
+
+.cat-wrapper.not-watching .cat-head {
+    transform: translateX(-40%) rotate(-20deg) translateY(5px); /* Head tucked in */
+    top: -10px; /* Head positioned more into body */
+}
+
+.cat-wrapper.not-watching .cat-eyes {
+    transform: rotate(20deg); /* Rotate eyes to match head position */
+}
+
+.cat-wrapper.not-watching .cat-eye-left,
+.cat-wrapper.not-watching .cat-eye-right {
+    height: 3px; /* Nearly closed eyes */
+    background: #ffdfb8; /* Match body color for closed eyes */
+    top: 5px; /* Position adjustment */
+}
+
+.cat-wrapper.not-watching .cat-pupil-left,
+.cat-wrapper.not-watching .cat-pupil-right {
+    opacity: 0.3; /* Barely visible pupils */
+    height: 2px; /* Very thin slits */
+    animation: none; /* No pupil movement when sleeping */
+}
+
+/* Add small "Z" animation for sleeping cat */
+.cat-wrapper.not-watching .cat-head::after {
+    content: 'z';
+    position: absolute;
+    top: -15px;
+    right: -5px;
+    font-size: 14px;
+    font-weight: bold;
+    color: rgba(100, 100, 100, 0.3);
+    animation: sleeping-z 3s infinite ease-in-out;
+    opacity: 0;
+}
+@keyframes sleeping-z {
+    0%, 100% { transform: scale(0.5) translateY(0); opacity: 0; }
+    30% { transform: scale(0.7) translateY(-10px); opacity: 0.5; }
+    60% { transform: scale(0.9) translateY(-20px); opacity: 0.2; }
+    90% { transform: scale(1.1) translateY(-30px); opacity: 0; }
+}
+
+.cat-wrapper.not-watching .cat-eyelid-left,
+.cat-wrapper.not-watching .cat-eyelid-right {
+    animation: sleep-blink 8s ease infinite;
+}
+
+@keyframes sleep-blink {
+    0%, 8%, 10%, 100% { transform: translateY(0); }
+    9% { transform: translateY(-2px); }
+}
+
+.cat-wrapper.not-watching .ear-left {
+    transform: rotate(-10deg) scale(0.9); /* Relaxed ears */
+}
+
+.cat-wrapper.not-watching .ear-right {
+    transform: rotate(10deg) scale(0.9); /* Relaxed ears */
+}
+
+.cat-wrapper.not-watching .cat-mouth {
+    width: 6px;
+    height: 3px;
+    transform: translateX(-50%) rotate(10deg);
+}
+
+.cat-wrapper.not-watching .cat-nose {
+    transform: translateX(-50%) rotate(10deg);
+}
+
+.cat-wrapper.not-watching .whisker {
+    /* Relaxed whiskers when sleeping */
+    transition: all 0.8s ease;
+}
+
+.cat-wrapper.not-watching .whisker-left-1 {
+    transform: translateY(2px) rotate(-5deg); /* Drooping whiskers when sleeping */
+}
+
+.cat-wrapper.not-watching .whisker-left-2 {
+    transform: translateY(2px) rotate(-5deg);
+}
+
+.cat-wrapper.not-watching .whisker-left-3 {
+    transform: translateY(2px) rotate(-5deg);
+}
+
+.cat-wrapper.not-watching .whisker-right-1 {
+    transform: translateY(2px) rotate(5deg); /* Drooping whiskers when sleeping */
+}
+
+.cat-wrapper.not-watching .whisker-right-2 {
+    transform: translateY(2px) rotate(5deg);
+}
+
+.cat-wrapper.not-watching .whisker-right-3 {
+    transform: translateY(2px) rotate(5deg);
+}
+
+.cat-wrapper.not-watching .cat-tail {
+    /* Curled tail when sleeping */
+    transform: rotate(20deg) translateX(-15px) translateY(-5px); /* Tail curled around body */
+    width: 35px; /* Shorter tail when curled */
+    height: 12px; /* Slightly thicker */
+    border-radius: 15px 15px 15px 15px; /* Rounded on both ends */
+}
+
+.cat-wrapper.not-watching .paw-front-left {
+    transform: translateX(-5px) translateY(-2px) rotate(-20deg); /* Paw tucked in */
+}
+
+.cat-wrapper.not-watching .paw-front-right {
+    transform: translateX(-10px) translateY(-3px) rotate(-10deg); /* Paw tucked in */
+}
+
+.cat-wrapper.not-watching .paw-back-left {
+    transform: translateX(-8px);
+}
+
+.cat-wrapper.not-watching .paw-back-right {
+    transform: translateX(-5px) translateY(-2px);
+}
+
+.cat-wrapper.not-watching .cat-status {
+    color: #94a3b8;
+}
+
+.cat-wrapper.not-watching .cat-shadow {
+    width: 65px;
+    opacity: 0.8;
+    transform: translateX(-60%);
+    filter: blur(4px);
+}
+
+/* ALERT/WATCHING STATE - Cat sitting upright and attentive */
+.cat-wrapper.watching .cat {
+    transform: translateX(-50%) translateY(-5px); /* Slight lift */
+    bottom: 35px;
+    animation: slight-cat-bounce 5s ease-in-out infinite;
+}
+
+@keyframes slight-cat-bounce {
+    0%, 100% { transform: translateX(-50%) translateY(-5px); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+}
+
+.cat-wrapper.watching .cat-body {
+    height: 80px; /* Taller when sitting upright */
+    border-radius: 45% 45% 40% 40% / 50% 50% 45% 45%;
+    background: linear-gradient(to bottom, #ffdfb8, #f0c28e, #e0b382, #daa583); /* More detailed gradient */
+}
+
+.cat-wrapper.watching .cat-head {
+    transform: translateX(-50%) translateY(-5px);
+    top: -20px; /* Head held higher */
+    animation: alert-head-movement 8s ease-in-out infinite;
+}
+
+@keyframes alert-head-movement {
+    0%, 100% { transform: translateX(-50%) translateY(-5px) rotate(0deg); }
+    25% { transform: translateX(-48%) translateY(-7px) rotate(5deg); }
+    75% { transform: translateX(-52%) translateY(-6px) rotate(-3deg); }
+}
+
+.cat-wrapper.watching .cat-eyes {
+    top: 12px; /* Positioned for alert look */
+}
+
+.cat-wrapper.watching .cat-eye {
+    width: 15px;
+    height: 15px; /* Wider eyes when alert */
+}
+
+.cat-wrapper.watching .cat-pupil-left,
+.cat-wrapper.watching .cat-pupil-right {
+    width: 10px;
+    height: 15px; /* Larger pupils when alert */
+    animation: pupil-alert 3s ease-in-out infinite alternate;
+    background: #000; /* Darker pupils when alert */
+    top: 1px;
+}
+
+@keyframes pupil-alert {
+    0%, 100% { transform: scale(1) translate(0, 0); }
+    25% { transform: scale(1.1) translate(1px, -1px); }
+    50% { transform: scale(0.9) translate(-1px, 1px); }
+    75% { transform: scale(1.1) translate(-2px, -1px); }
+}
+
+.cat-wrapper.watching .ear-left {
+    transform: rotate(-30deg) translateY(-2px) scaleY(1.1);
+    animation: alert-ear-twitch-left 5s ease-in-out infinite;
+}
+
+.cat-wrapper.watching .ear-right {
+    transform: rotate(30deg) translateY(-2px) scaleY(1.1);
+    animation: alert-ear-twitch-right 6s ease-in-out infinite;
+}
+
+@keyframes alert-ear-twitch-left {
+    0%, 100% { transform: rotate(-30deg) translateY(-2px) scaleY(1.1); }
+    15% { transform: rotate(-25deg) translateY(0) scaleY(1.05); }
+    20% { transform: rotate(-35deg) translateY(-3px) scaleY(1.15); }
+    25% { transform: rotate(-28deg) translateY(-1px) scaleY(1.1); }
+}
+
+@keyframes alert-ear-twitch-right {
+    0%, 100% { transform: rotate(30deg) translateY(-2px) scaleY(1.1); }
+    35% { transform: rotate(25deg) translateY(0) scaleY(1.05); }
+    40% { transform: rotate(35deg) translateY(-3px) scaleY(1.15); }
+    45% { transform: rotate(28deg) translateY(-1px) scaleY(1.1); }
+}
+
+.cat-wrapper.watching .cat-mouth {
+    width: 10px;
+    height: 5px;
+}
+
+.cat-wrapper.watching .cat-nose {
+    animation: nose-twitch 15s ease-in-out infinite;
+}
+
+@keyframes nose-twitch {
+    0%, 90%, 100% { transform: translateX(-50%) scale(1); }
+    95% { transform: translateX(-50%) scale(1.2); }
+}
+
+.cat-wrapper.watching .whisker-left-1,
+.cat-wrapper.watching .whisker-left-2,
+.cat-wrapper.watching .whisker-left-3,
+.cat-wrapper.watching .whisker-right-1,
+.cat-wrapper.watching .whisker-right-2,
+.cat-wrapper.watching .whisker-right-3 {
+    width: 20px; /* Longer whiskers when alert */
+}
+
+.cat-wrapper.watching .whisker-left-1 {
+    transform: rotate(15deg);
+}
+
+.cat-wrapper.watching .whisker-left-3 {
+    transform: rotate(-15deg);
+}
+
+.cat-wrapper.watching .whisker-right-1 {
+    transform: rotate(-15deg);
+}
+
+.cat-wrapper.watching .whisker-right-3 {
+    transform: rotate(15deg);
+}
+
+.cat-wrapper.watching .cat-tail {
+    width: 45px; /* Longer tail when alert */
+    height: 9px;
+    transform: rotate(-10deg) translateY(-8px);
+    animation: alert-tail-wag 3s ease-in-out infinite;
+    border-radius: 5px 20px 20px 5px;
+}
+
+@keyframes alert-tail-wag {
+    0%, 100% { transform: rotate(-10deg) translateY(-8px); }
+    25% { transform: rotate(15deg) translateY(-10px); }
+    50% { transform: rotate(-12deg) translateY(-7px); }
+    75% { transform: rotate(8deg) translateY(-9px); }
+}
+
+.cat-wrapper.watching .paw-front-left {
+    transform: translateY(-8px) translateX(0px);
+}
+
+.cat-wrapper.watching .paw-front-right {
+    transform: translateY(-8px) translateX(0px);
+}
+
+.cat-wrapper.watching .paw-back-left {
+    transform: translateX(-3px) translateY(-2px);
+}
+
+.cat-wrapper.watching .paw-back-right {
+    transform: translateX(3px) translateY(-2px);
+}
+
+.cat-wrapper.watching .cat-shadow {
+    width: 70px;
+    opacity: 0.15;
+    transform: translateX(-50%);
+    filter: blur(5px);
+}
+
+.cat-wrapper.watching .cat-status {
+    color: #25D366;
+    font-weight: 700;
+}
+
+/* PLAYFUL STATE - add for extra interactivity */
+.cat-wrapper.playful .cat {
+    animation: cat-playful 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes cat-playful {
+    0% { transform: translateX(-50%) translateY(0); }
+    100% { transform: translateX(-50%) translateY(-10px); }
+}
+
+.cat-wrapper.playful .cat-head {
+    animation: head-playful 0.8s ease-in-out infinite alternate;
+    animation-delay: 0.1s;
+}
+
+@keyframes head-playful {
+    0% { transform: translateX(-50%) rotate(-5deg); }
+    100% { transform: translateX(-50%) rotate(5deg); }
+}
+
+.cat-wrapper.playful .cat-tail {
+    animation: tail-playful 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes tail-playful {
+    0% { transform: rotate(-30deg); }
+    100% { transform: rotate(10deg); }
+}
+
+.cat-wrapper.playful .cat-eye-left,
+.cat-wrapper.playful .cat-eye-right {
+    height: 16px; /* Bigger eyes when playful */
+    width: 16px;
+}
+
+.cat-wrapper.playful .cat-pupil-left,
+.cat-wrapper.playful .cat-pupil-right {
+    height: 16px;
+    width: 11px;
+    border-radius: 50%;
+    animation: pupil-playful 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes pupil-playful {
+    0% { transform: scale(1) translate(1px, 1px); }
+    100% { transform: scale(1.1) translate(-1px, -1px); }
+}
+
+.cat-wrapper.playful .ear-left {
+    animation: ear-left-playful 0.8s ease-in-out infinite alternate;
+}
+
+.cat-wrapper.playful .ear-right {
+    animation: ear-right-playful 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes ear-left-playful {
+    0% { transform: rotate(-20deg); }
+    100% { transform: rotate(-35deg); }
+}
+
+@keyframes ear-right-playful {
+    0% { transform: rotate(20deg); }
+    100% { transform: rotate(35deg); }
+}
+
+/* Day and night mode transitions */
+.cat-scene.night-mode .sky-gradient {
+    background: linear-gradient(to bottom, #001d38, #05355b);
+    transition: background 1.5s ease;
+}
+
+.cat-scene.night-mode .sun {
+    background: radial-gradient(circle, #e1e1e1, #d4d4d4);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    animation: moon-glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes moon-glow {
+    from {
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    }
+    to {
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+    }
+}
+
+/* Stars for night mode */
+.stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+}
+
+.cat-scene.night-mode .stars {
+    opacity: 1;
+}
+
+.star {
+    position: absolute;
+    background-color: white;
+    border-radius: 50%;
+}
+
+.star-1 {
+    top: 20%;
+    left: 15%;
+    width: 2px;
+    height: 2px;
+    animation: twinkle 3s ease-in-out infinite;
+}
+
+.star-2 {
+    top: 15%;
+    left: 45%;
+    width: 3px;
+    height: 3px;
+    animation: twinkle 4s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+.star-3 {
+    top: 30%;
+    left: 75%;
+    width: 2px;
+    height: 2px;
+    animation: twinkle 3.5s ease-in-out infinite;
+    animation-delay: 0.5s;
+}
+
+.star-4 {
+    top: 10%;
+    left: 30%;
+    width: 1px;
+    height: 1px;
+    animation: twinkle 4.5s ease-in-out infinite;
+    animation-delay: 1.5s;
+}
+
+.star-5 {
+    top: 25%;
+    left: 60%;
+    width: 2px;
+    height: 2px;
+    animation: twinkle 3.8s ease-in-out infinite;
+    animation-delay: 0.8s;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+}
+
+/* Shooting star for night mode */
+.shooting-star {
+    position: absolute;
+    top: 15%;
+    left: -10%;
+    width: 30px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, white);
+    opacity: 0;
+    transform: rotate(15deg);
+    z-index: 1;
+}
+
+.cat-scene.night-mode .shooting-star {
+    animation: shooting 15s linear infinite;
+    animation-delay: 5s;
+}
+
+@keyframes shooting {
+    0% { transform: translateX(0) rotate(15deg); opacity: 0; }
+    1% { opacity: 1; }
+    5% { transform: translateX(120px) translateY(80px) rotate(15deg); opacity: 0; }
+    100% { opacity: 0; }
+}
+
+/* Seasonal decorations */
+.seasonal-decorations {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    opacity: 0; /* Hidden by default - enable with JS */
+    transition: opacity 1s ease;
+}
+
+/* Snow for winter theme */
+.snowflake {
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    opacity: 0;
+}
+
+.snowflake-1 {
+    top: -10%;
+    left: 20%;
+    animation: snow-fall 15s linear infinite;
+}
+
+.snowflake-2 {
+    top: -20%;
+    left: 40%;
+    animation: snow-fall 12s linear infinite;
+    animation-delay: 2s;
+}
+
+.snowflake-3 {
+    top: -15%;
+    left: 60%;
+    animation: snow-fall 18s linear infinite;
+    animation-delay: 5s;
+}
+
+.snowflake-4 {
+    top: -5%;
+    left: 80%;
+    animation: snow-fall 14s linear infinite;
+    animation-delay: 1s;
+}
+
+.snowflake-5 {
+    top: -25%;
+    left: 30%;
+    animation: snow-fall 16s linear infinite;
+    animation-delay: 3s;
+}
+
+.snowflake-6 {
+    top: -15%;
+    left: 70%;
+    animation: snow-fall 13s linear infinite;
+    animation-delay: 4s;
+}
+
+@keyframes snow-fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    90% {
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateY(150px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Enhanced window decorations */
+.window-decoration {
+    position: absolute;
+    z-index: 5;
+    opacity: 0; /* Hidden by default - enable with JS */
+    transition: opacity 1s ease;
+}
+
+.window-lights {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.window-light {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    animation: light-twinkle 2s ease-in-out infinite alternate;
+}
+
+.window-light-1 {
+    top: 5px;
+    left: 10px;
+    background-color: #ff5e5e;
+    animation-delay: 0.2s;
+}
+
+.window-light-2 {
+    top: 5px;
+    right: 10px;
+    background-color: #5eff5e;
+    animation-delay: 0.5s;
+}
+
+.window-light-3 {
+    bottom: 5px;
+    left: 10px;
+    background-color: #5eb8ff;
+    animation-delay: 0.8s;
+}
+
+.window-light-4 {
+    bottom: 5px;
+    right: 10px;
+    background-color: #ffdd5e;
+    animation-delay: 1.1s;
+}
+
+@keyframes light-twinkle {
+    0%, 100% {
+        opacity: 0.7;
+        box-shadow: 0 0 5px currentColor;
+    }
+    50% {
+        opacity: 1;
+        box-shadow: 0 0 10px currentColor;
+    }
+}
+
+/* Weather effects */
+.rain-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.raindrop {
+    position: absolute;
+    width: 1px;
+    height: 15px;
+    background: linear-gradient(to bottom, transparent, rgba(200, 200, 255, 0.5));
+    opacity: 0;
+}
+
+.raindrop-1 {
+    left: 20%;
+    animation: rain-fall 1.5s linear infinite;
+}
+
+.raindrop-2 {
+    left: 30%;
+    animation: rain-fall 1.3s linear infinite;
+    animation-delay: 0.2s;
+}
+
+.raindrop-3 {
+    left: 40%;
+    animation: rain-fall 1.8s linear infinite;
+    animation-delay: 0.5s;
+}
+
+.raindrop-4 {
+    left: 50%;
+    animation: rain-fall 1.4s linear infinite;
+    animation-delay: 0.1s;
+}
+
+.raindrop-5 {
+    left: 60%;
+    animation: rain-fall 1.6s linear infinite;
+    animation-delay: 0.3s;
+}
+
+.raindrop-6 {
+    left: 70%;
+    animation: rain-fall 1.2s linear infinite;
+    animation-delay: 0.6s;
+}
+
+.raindrop-7 {
+    left: 80%;
+    animation: rain-fall 1.7s linear infinite;
+    animation-delay: 0.4s;
+}
+
+@keyframes rain-fall {
+    0% {
+        transform: translateY(-10px) rotate(15deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.7;
+    }
+    90% {
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateY(150px) rotate(15deg);
+        opacity: 0;
+    }
+}
+
+/* Interactive elements */
+.toy {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: radial-gradient(circle, #ff9d81, #ff7d57);
+    border-radius: 50%;
+    bottom: 10px;
+    left: 30%;
+    z-index: 5;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.toy::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    width: 1px;
+    height: 8px;
+    background: linear-gradient(to bottom, transparent, #666);
+    transform: translateX(-50%);
+}
+
+.toy:hover {
+    transform: scale(1.1);
+}
+
+.food-bowl {
+    position: absolute;
+    width: 25px;
+    height: 10px;
+    background: linear-gradient(to bottom, #b3b3b3, #8c8c8c);
+    border-radius: 50%;
+    bottom: 5px;
+    right: 30%;
+    z-index: 5;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.food-bowl::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 6px;
+    background: linear-gradient(to bottom, #f2f2f2, #e6e6e6);
+    border-radius: 50%;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.food-bowl:hover {
+    transform: scale(1.1);
+}
+
+/* Cat mood indicators - subtly shown through body language */
+.cat-wrapper.happy .cat-tail {
+    animation: happy-tail 3s ease-in-out infinite alternate;
+}
+
+@keyframes happy-tail {
+    0% { transform: rotate(-20deg); }
+    100% { transform: rotate(10deg); }
+}
+
+.cat-wrapper.happy .cat-mouth::before {
+    width: 7px;
+    height: 3px;
+    opacity: 0.8;
+}
+
+.cat-wrapper.curious .cat-head {
+    transform: translateX(-50%) rotate(10deg);
+}
+
+.cat-wrapper.curious .ear-left {
+    transform: rotate(-35deg) translateY(-3px);
+}
+
+.cat-wrapper.curious .ear-right {
+    transform: rotate(35deg) translateY(-3px);
+}
+
+.cat-wrapper.curious .cat-tail {
+    transform: rotate(-5deg) translateY(-10px);
+    height: 12px;
+}
+
+/* Background music toggle button */
+.music-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 25px;
+    height: 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.music-toggle:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.music-icon {
+    font-size: 14px;
+    color: #555;
+}
+
+/* Weather toggle button */
+.weather-toggle {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 25px;
+    height: 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.weather-toggle:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.weather-icon {
+    font-size: 14px;
+    color: #555;
+}
+
+/* Accessibility features */
+.accessibility-controls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+    z-index: 10;
+}
+
+.accessibility-button {
+    width: 25px;
+    height: 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    font-size: 12px;
+    color: #555;
+    border: none;
+}
+
+.accessibility-button:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Focus states for keyboard navigation */
+.toy:focus,
+.food-bowl:focus,
+.music-toggle:focus,
+.weather-toggle:focus,
+.accessibility-button:focus {
+    outline: 2px solid #4a90e2;
+    outline-offset: 2px;
+}
+
+/* Animation toggle for reduced motion preference */
+body.reduced-motion .cat-pupil-left, 
+body.reduced-motion .cat-pupil-right,
+body.reduced-motion .cat-eyelid-left,
+body.reduced-motion .cat-eyelid-right,
+body.reduced-motion .cloud-cat-1,
+body.reduced-motion .cloud-cat-2,
+body.reduced-motion .cloud-cat-3,
+body.reduced-motion .sun,
+body.reduced-motion .bird-1,
+body.reduced-motion .bird-2,
+body.reduced-motion .wall-clock::before,
+body.reduced-motion .wall-clock::after,
+body.reduced-motion .cat-wrapper.watching .cat-tail,
+body.reduced-motion .cat-wrapper.not-watching .cat-body,
+body.reduced-motion .cat-wrapper.playful .cat,
+body.reduced-motion .cat-wrapper.playful .cat-head,
+body.reduced-motion .cat-wrapper.playful .cat-tail,
+body.reduced-motion .cat-wrapper.happy .cat-tail,
+body.reduced-motion .star-1,
+body.reduced-motion .star-2,
+body.reduced-motion .star-3,
+body.reduced-motion .star-4,
+body.reduced-motion .star-5,
+body.reduced-motion .shooting-star,
+body.reduced-motion .snowflake-1,
+body.reduced-motion .snowflake-2,
+body.reduced-motion .snowflake-3,
+body.reduced-motion .snowflake-4,
+body.reduced-motion .snowflake-5,
+body.reduced-motion .snowflake-6,
+body.reduced-motion .window-light-1,
+body.reduced-motion .window-light-2,
+body.reduced-motion .window-light-3,
+body.reduced-motion .window-light-4,
+body.reduced-motion .raindrop-1,
+body.reduced-motion .raindrop-2,
+body.reduced-motion .raindrop-3,
+body.reduced-motion .raindrop-4,
+body.reduced-motion .raindrop-5,
+body.reduced-motion .raindrop-6,
+body.reduced-motion .raindrop-7 {
+    animation: none !important;
+}
+
+body.reduced-motion .toy,
+body.reduced-motion .food-bowl,
+body.reduced-motion .music-toggle,
+body.reduced-motion .weather-toggle,
+body.reduced-motion .accessibility-button {
+    transition: outline 0.3s ease;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 500px) {
+    .cat-wrapper {
+        width: 250px;
+        height: 180px;
+    }
+    
+    .window-frame {
+        width: 150px;
+        height: 120px;
+    }
+    
+    .window-sill {
+        width: 180px;
+    }
+    
+    .outside-scene {
+        width: 150px;
+        height: 120px;
+    }
+    
+    .cat {
+        width: 70px;
+        height: 60px;
+    }
+    
+    .cat-head {
+        width: 45px;
+        height: 40px;
+    }
+}

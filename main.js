@@ -11,17 +11,120 @@ const pino = require('pino');
 const mime = require('mime-types');
 const { writeFile, readFile, mkdir } = require('fs/promises');
 
+// Add cat purring sound functionality
+const createPurringSound = () => {
+    // Create audio context for purring sound
+    let audioContext;
+    let gainNode;
+    let oscillator;
+    let isPlaying = false;
+
+    function startPurring() {
+        if (isPlaying) return;
+        
+        try {
+            // Initialize audio context if needed
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                gainNode = audioContext.createGain();
+                gainNode.gain.value = 0.05; // Low volume
+                gainNode.connect(audioContext.destination);
+            }
+            
+            // Create and configure oscillator for purring effect
+            oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 40; // Low frequency for cat purr
+            
+            // Add modulation for more realistic purring
+            const modulator = audioContext.createOscillator();
+            modulator.type = 'sine';
+            modulator.frequency.value = 3; // Purr modulation speed
+            
+            const modulationGain = audioContext.createGain();
+            modulationGain.gain.value = 15; // Modulation intensity
+            
+            modulator.connect(modulationGain);
+            modulationGain.connect(oscillator.frequency);
+            
+            oscillator.connect(gainNode);
+            modulator.start();
+            oscillator.start();
+            
+            isPlaying = true;
+            
+            // Gradually increase volume
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 0.5);
+        } catch(err) {
+            console.log('Audio not supported or enabled:', err);
+        }
+    }
+
+    function stopPurring() {
+        if (!isPlaying || !oscillator) return;
+        
+        try {
+            // Fade out gradually
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+            
+            // Stop after fade-out
+            setTimeout(() => {
+                oscillator.stop();
+                isPlaying = false;
+            }, 600);
+        } catch(err) {
+            console.log('Error stopping purr:', err);
+        }
+    }
+
+    return {
+        start: startPurring,
+        stop: stopPurring
+    };
+};
+
 // Global variables
 let mainWindow;
 let sock;
 let store;
 let watcher;
 let caption = '';
-let shutdownAfterSend = false;
+let shutdownAfterSend = false; // Always start with shutdown disabled
 let isProcessingFile = false;
 let activeTransfers = new Map(); // Track active transfers
 let maxRetries = 5;
 let preventAutoReconnect = false; // New flag to control automatic reconnections
+
+// Play sound function that will be available to the renderer process
+function playSound(soundName) {
+    try {
+        const soundPath = path.join(__dirname, 'assets', soundName);
+        logToFileAndUI(`Playing sound: ${soundPath}`);
+        
+        // Use child_process to play sound with system command
+        // For macOS
+        if (process.platform === 'darwin') {
+            const { execSync } = require('child_process');
+            execSync(`afplay "${soundPath}"`, { stdio: 'ignore' });
+        }
+        // For Windows
+        else if (process.platform === 'win32') {
+            const { execSync } = require('child_process');
+            execSync(`powershell -c (New-Object Media.SoundPlayer "${soundPath}").PlaySync()`);
+        }
+        // For Linux
+        else if (process.platform === 'linux') {
+            const { execSync } = require('child_process');
+            execSync(`aplay "${soundPath}"`);
+        }
+        
+        return true;
+    } catch (error) {
+        logToFileAndUI(`Error playing sound: ${error.message}`, true);
+        return false;
+    }
+}
 
 // Configuration settings storage
 const configFilePath = path.join(app.getPath('userData'), 'user_config.json');
@@ -33,6 +136,13 @@ function loadUserConfig() {
             const rawData = fs.readFileSync(configFilePath, 'utf8');
             const config = JSON.parse(rawData);
             logToFileAndUI('User configuration loaded');
+            
+            // We explicitly ignore the shutdown setting
+            // as we always want it to start as false
+            if (config.shutdown !== undefined) {
+                delete config.shutdown; 
+            }
+            
             return config;
         }
     } catch (err) {
@@ -43,8 +153,8 @@ function loadUserConfig() {
         folderPath: '',
         chatId: '',
         chatName: '',
-        caption: '',
-        shutdown: false
+        caption: ''
+        // No shutdown property - we don't want to persist it
     };
 }
 
@@ -459,11 +569,12 @@ ipcMain.on('update-caption', async (event, value) => {
 ipcMain.on('toggle-shutdown', (event, value) => {
     shutdownAfterSend = value;
     logToFileAndUI(`Shutdown after send set to: ${shutdownAfterSend}`);
-
-    // Update the stored config
-    const config = loadUserConfig();
-    config.shutdown = value;
-    saveUserConfig(config);
+    
+    // No longer saving to configuration
+    // We only update the UI to reflect the current state
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('shutdown-state-changed', shutdownAfterSend);
+    }
 });
 
 // Handle folder selection
@@ -1030,27 +1141,88 @@ ipcMain.on('reset-auth-data', () => {
 
 // Log out of WhatsApp
 ipcMain.on('logout-whatsapp', async () => {
-    if (sock) {
-        try {
-            logToFileAndUI('Logging out of WhatsApp...');
-            await sock.logout();
-            sock.end();
-            logToFileAndUI('Logged out of WhatsApp');
-            mainWindow.webContents.send('whatsapp-disconnected');
-
-            // Clear auth data
-            if (fs.existsSync(userDataPath)) {
-                fs.rmSync(userDataPath, { recursive: true });
-                logToFileAndUI('Authentication data cleared');
+    try {
+        logToFileAndUI('Logging out of WhatsApp...');
+        
+        // Set this flag to prevent automatic reconnection attempts
+        preventAutoReconnect = true;
+        
+        if (sock) {
+            try {
+                // First send explicit logout command to WhatsApp servers
+                await sock.logout();
+                logToFileAndUI('Logout command sent to WhatsApp server');
+                
+                // Properly end the socket
+                sock.ev.removeAllListeners(); // Remove all event listeners
+                await sock.end();
+                sock = null; // Clear the socket reference
+                
+                // Clean up store data
+                if (store) {
+                    store = null;
+                    logToFileAndUI('Store data cleared');
+                }
+                
+                logToFileAndUI('Socket connection terminated');
+            } catch (err) {
+                logToFileAndUI(`Error during WhatsApp logout: ${err.message}`, true);
             }
-
-            // Reinitialize client
-            setTimeout(() => {
-                initWhatsAppClient();
-            }, 3000);
-        } catch (err) {
-            logToFileAndUI(`Error logging out: ${err.message}`, true);
         }
+        
+        // Thoroughly clean up auth data
+        const authDirectory = path.join(app.getPath('userData'), 'baileys-auth');
+        if (fs.existsSync(authDirectory)) {
+            fs.rmSync(authDirectory, { recursive: true, force: true });
+            fs.mkdirSync(authDirectory, { recursive: true });
+            logToFileAndUI('Authentication data cleared');
+        }
+        
+        // Also clear legacy auth paths
+        if (fs.existsSync(userDataPath)) {
+            fs.rmSync(userDataPath, { recursive: true, force: true });
+            logToFileAndUI('Legacy authentication data cleared');
+        }
+        
+        // Clear any session files
+        const sessionPath = path.join(app.getPath('userData'), 'session');
+        if (fs.existsSync(sessionPath)) {
+            fs.rmSync(sessionPath, { recursive: true, force: true });
+            logToFileAndUI('Session data cleared');
+        }
+        
+        // Additional cleanup for any remaining auth keys or tokens
+        const authStorePath = path.join(app.getPath('userData'), 'auth_store');
+        if (fs.existsSync(authStorePath)) {
+            fs.rmSync(authStorePath, { recursive: true, force: true });
+            logToFileAndUI('Auth store data cleared');
+        }
+        
+        // Clear any possible Baileys store files to prevent cached data issues
+        const storeFile = path.join(app.getPath('userData'), 'baileys_store.json');
+        if (fs.existsSync(storeFile)) {
+            fs.unlinkSync(storeFile);
+            logToFileAndUI('Store file cleared');
+        }
+        
+        // Clean up any active transfers
+        if (activeTransfers.size > 0) {
+            activeTransfers.clear();
+            logToFileAndUI(`Canceled ${activeTransfers.size} pending transfers`);
+        }
+        
+        // Force garbage collection if possible
+        if (global.gc) {
+            global.gc();
+            logToFileAndUI('Performed garbage collection');
+        }
+        
+        // Notify renderer about disconnection
+        mainWindow.webContents.send('whatsapp-disconnected');
+        logToFileAndUI('Logged out of WhatsApp');
+        
+    } catch (err) {
+        logToFileAndUI(`Error during logout process: ${err.message}`, true);
     }
 });
 
@@ -1098,6 +1270,12 @@ ipcMain.on('cancel-transfers', () => {
 ipcMain.on('set-max-retries', (event, count) => {
     maxRetries = count;
     logToFileAndUI(`Maximum retry attempts set to: ${maxRetries}`);
+});
+
+// IPC handler for playing sounds
+ipcMain.on('play-sound', (event, soundName) => {
+    logToFileAndUI(`Renderer requested to play sound: ${soundName}`);
+    playSound(soundName);
 });
 
 // Enhanced getAllChats function to find all contacts and chats - without placeholders
@@ -1213,3 +1391,10 @@ async function getAllChats() {
         return [];
     }
 }
+
+// Export module functions
+module.exports = { 
+    // ...existing exports
+    createPurringSound,
+    playSound
+};
