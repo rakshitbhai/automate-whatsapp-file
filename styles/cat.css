@@ -964,27 +964,73 @@
     transition: all 0.4s ease;
 }
 
-/* SLEEPING STATE - Not watching - Even cuter curled up position */
+/* SLEEPING STATE - Not watching - Enhanced realistic sleeping physics */
 .cat-wrapper.not-watching .cat {
     transform: translateX(-30%) rotate(-15deg);
     bottom: 35px;
+    animation: sleeping-drift 8s ease-in-out infinite; /* Subtle position drift while sleeping */
 }
 
 .cat-wrapper.not-watching .cat-body {
     border-radius: 60% 40% 60% 40% / 60% 60% 40% 40%;
     background: linear-gradient(135deg, #ffdfb8, #f0c28e, #e0b382); /* Enhanced gradient for sleeping */
     height: 60px; /* Smaller height when curled */
-    animation: breathing 4s ease-in-out infinite; /* Breathing animation */
+    animation: realistic-breathing 3.5s ease-in-out infinite; /* More realistic breathing */
 }
 
-@keyframes breathing {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05) translateY(-2px); }
+/* Enhanced breathing animation with more natural rhythm */
+@keyframes realistic-breathing {
+    0%, 100% { 
+        transform: scale(1) translateY(0); 
+        border-radius: 60% 40% 60% 40% / 60% 60% 40% 40%;
+    }
+    30% { 
+        transform: scale(1.02) translateY(-1px); 
+        border-radius: 58% 42% 58% 42% / 58% 58% 42% 42%;
+    }
+    50% { 
+        transform: scale(1.04) translateY(-2px); 
+        border-radius: 56% 44% 56% 44% / 56% 56% 44% 44%;
+    }
+    70% { 
+        transform: scale(1.02) translateY(-1px); 
+        border-radius: 58% 42% 58% 42% / 58% 58% 42% 42%;
+    }
+}
+
+/* Subtle sleeping position drift for more natural sleep */
+@keyframes sleeping-drift {
+    0%, 100% { 
+        transform: translateX(-30%) rotate(-15deg) translateY(0); 
+    }
+    25% { 
+        transform: translateX(-32%) rotate(-16deg) translateY(0.5px); 
+    }
+    50% { 
+        transform: translateX(-29%) rotate(-14deg) translateY(-0.5px); 
+    }
+    75% { 
+        transform: translateX(-31%) rotate(-15.5deg) translateY(0.3px); 
+    }
 }
 
 .cat-wrapper.not-watching .cat-head {
     transform: translateX(-40%) rotate(-20deg) translateY(5px); /* Head tucked in */
     top: -10px; /* Head positioned more into body */
+    animation: sleeping-head-sway 6s ease-in-out infinite; /* Gentle head movement */
+}
+
+/* Gentle head swaying during sleep */
+@keyframes sleeping-head-sway {
+    0%, 100% { 
+        transform: translateX(-40%) rotate(-20deg) translateY(5px); 
+    }
+    33% { 
+        transform: translateX(-41%) rotate(-21deg) translateY(5.5px); 
+    }
+    66% { 
+        transform: translateX(-39%) rotate(-19deg) translateY(4.5px); 
+    }
 }
 
 .cat-wrapper.not-watching .cat-eyes {
@@ -1005,7 +1051,7 @@
     animation: none; /* No pupil movement when sleeping */
 }
 
-/* Add small "Z" animation for sleeping cat */
+/* Add small "Z" animation for sleeping cat with improved physics */
 .cat-wrapper.not-watching .cat-head::after {
     content: 'z';
     position: absolute;
@@ -1014,32 +1060,91 @@
     font-size: 14px;
     font-weight: bold;
     color: rgba(100, 100, 100, 0.3);
-    animation: sleeping-z 3s infinite ease-in-out;
+    animation: enhanced-sleeping-z 4s infinite ease-in-out;
     opacity: 0;
 }
-@keyframes sleeping-z {
-    0%, 100% { transform: scale(0.5) translateY(0); opacity: 0; }
-    30% { transform: scale(0.7) translateY(-10px); opacity: 0.5; }
-    60% { transform: scale(0.9) translateY(-20px); opacity: 0.2; }
-    90% { transform: scale(1.1) translateY(-30px); opacity: 0; }
+
+@keyframes enhanced-sleeping-z {
+    0%, 80%, 100% { 
+        transform: scale(0.5) translateY(0) rotate(0deg); 
+        opacity: 0; 
+    }
+    10% { 
+        transform: scale(0.6) translateY(-5px) rotate(2deg); 
+        opacity: 0.3; 
+    }
+    25% { 
+        transform: scale(0.8) translateY(-12px) rotate(-1deg); 
+        opacity: 0.6; 
+    }
+    40% { 
+        transform: scale(1) translateY(-20px) rotate(1deg); 
+        opacity: 0.4; 
+    }
+    55% { 
+        transform: scale(1.1) translateY(-28px) rotate(0deg); 
+        opacity: 0.2; 
+    }
+    70% { 
+        transform: scale(1.2) translateY(-35px) rotate(-2deg); 
+        opacity: 0.1; 
+    }
 }
 
 .cat-wrapper.not-watching .cat-eyelid-left,
 .cat-wrapper.not-watching .cat-eyelid-right {
-    animation: sleep-blink 8s ease infinite;
+    animation: enhanced-sleep-blink 10s ease infinite;
 }
 
-@keyframes sleep-blink {
-    0%, 8%, 10%, 100% { transform: translateY(0); }
-    9% { transform: translateY(-2px); }
+@keyframes enhanced-sleep-blink {
+    0%, 85%, 87%, 89%, 100% { transform: translateY(0); }
+    86% { transform: translateY(-1px); }
+    88% { transform: translateY(-2px); }
+    90% { transform: translateY(-1px); }
 }
 
 .cat-wrapper.not-watching .ear-left {
     transform: rotate(-10deg) scale(0.9); /* Relaxed ears */
+    animation: sleeping-ear-twitch-left 20s ease-in-out infinite; /* Occasional ear twitches */
 }
 
 .cat-wrapper.not-watching .ear-right {
     transform: rotate(10deg) scale(0.9); /* Relaxed ears */
+    animation: sleeping-ear-twitch-right 18s ease-in-out infinite; /* Occasional ear twitches */
+}
+
+/* Subtle ear movements during sleep (responding to dream sounds) */
+@keyframes sleeping-ear-twitch-left {
+    0%, 85%, 100% { 
+        transform: rotate(-10deg) scale(0.9); 
+    }
+    86% { 
+        transform: rotate(-12deg) scale(0.92); 
+    }
+    87% { 
+        transform: rotate(-8deg) scale(0.88); 
+    }
+    88% { 
+        transform: rotate(-11deg) scale(0.9); 
+    }
+    89% { 
+        transform: rotate(-10deg) scale(0.9); 
+    }
+}
+
+@keyframes sleeping-ear-twitch-right {
+    0%, 90%, 100% { 
+        transform: rotate(10deg) scale(0.9); 
+    }
+    91% { 
+        transform: rotate(12deg) scale(0.92); 
+    }
+    92% { 
+        transform: rotate(8deg) scale(0.88); 
+    }
+    93% { 
+        transform: rotate(11deg) scale(0.9); 
+    }
 }
 
 .cat-wrapper.not-watching .cat-mouth {
@@ -1082,19 +1187,69 @@
 }
 
 .cat-wrapper.not-watching .cat-tail {
-    /* Curled tail when sleeping */
+    /* Curled tail when sleeping with gentle movement */
     transform: rotate(20deg) translateX(-15px) translateY(-5px); /* Tail curled around body */
     width: 35px; /* Shorter tail when curled */
     height: 12px; /* Slightly thicker */
     border-radius: 15px 15px 15px 15px; /* Rounded on both ends */
+    animation: sleeping-tail-twitch 12s ease-in-out infinite; /* Occasional sleep twitches */
+}
+
+/* Realistic sleeping tail twitches */
+@keyframes sleeping-tail-twitch {
+    0%, 94%, 100% { 
+        transform: rotate(20deg) translateX(-15px) translateY(-5px); 
+    }
+    95% { 
+        transform: rotate(25deg) translateX(-16px) translateY(-6px); 
+    }
+    96% { 
+        transform: rotate(18deg) translateX(-14px) translateY(-4px); 
+    }
+    97% { 
+        transform: rotate(22deg) translateX(-15px) translateY(-5px); 
+    }
 }
 
 .cat-wrapper.not-watching .paw-front-left {
     transform: translateX(-5px) translateY(-2px) rotate(-20deg); /* Paw tucked in */
+    animation: sleeping-paw-twitch-left 15s ease-in-out infinite; /* Occasional paw movement */
 }
 
 .cat-wrapper.not-watching .paw-front-right {
     transform: translateX(-10px) translateY(-3px) rotate(-10deg); /* Paw tucked in */
+    animation: sleeping-paw-twitch-right 13s ease-in-out infinite; /* Occasional paw movement */
+}
+
+/* Subtle paw twitches during sleep */
+@keyframes sleeping-paw-twitch-left {
+    0%, 92%, 100% { 
+        transform: translateX(-5px) translateY(-2px) rotate(-20deg); 
+    }
+    93% { 
+        transform: translateX(-4px) translateY(-1px) rotate(-18deg); 
+    }
+    94% { 
+        transform: translateX(-6px) translateY(-3px) rotate(-22deg); 
+    }
+    95% { 
+        transform: translateX(-5px) translateY(-2px) rotate(-20deg); 
+    }
+}
+
+@keyframes sleeping-paw-twitch-right {
+    0%, 88%, 100% { 
+        transform: translateX(-10px) translateY(-3px) rotate(-10deg); 
+    }
+    89% { 
+        transform: translateX(-9px) translateY(-2px) rotate(-8deg); 
+    }
+    90% { 
+        transform: translateX(-11px) translateY(-4px) rotate(-12deg); 
+    }
+    91% { 
+        transform: translateX(-10px) translateY(-3px) rotate(-10deg); 
+    }
 }
 
 .cat-wrapper.not-watching .paw-back-left {
@@ -1114,6 +1269,21 @@
     opacity: 0.8;
     transform: translateX(-60%);
     filter: blur(4px);
+    animation: sleeping-shadow-pulse 5s ease-in-out infinite; /* Shadow breathing effect */
+}
+
+/* Breathing shadow effect */
+@keyframes sleeping-shadow-pulse {
+    0%, 100% { 
+        width: 65px; 
+        opacity: 0.8; 
+        transform: translateX(-60%); 
+    }
+    50% { 
+        width: 68px; 
+        opacity: 0.7; 
+        transform: translateX(-58%); 
+    }
 }
 
 /* ALERT/WATCHING STATE - Cat sitting upright and attentive */

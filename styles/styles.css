@@ -17,16 +17,17 @@ body {
 .card {
     background-color: white;
     border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     padding: 1.75rem;
     margin-bottom: 2rem;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    border: 2px solid rgba(226, 232, 240, 1);
 }
 
 .card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.15);
+    border-color: rgba(203, 213, 225, 1);
 }
 
 .btn {
@@ -177,6 +178,16 @@ body {
     animation: pulse-yellow 2s infinite;
 }
 
+.status-waiting {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+}
+
+.status-waiting::before {
+    background-color: #2563eb;
+    animation: pulse-blue 2s infinite;
+}
+
 @keyframes pulse-green {
     0% {
         box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.4);
@@ -202,6 +213,20 @@ body {
 
     100% {
         box-shadow: 0 0 0 0 rgba(202, 138, 4, 0);
+    }
+}
+
+@keyframes pulse-blue {
+    0% {
+        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(37, 99, 235, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
     }
 }
 
@@ -296,6 +321,7 @@ body {
 
 .header-logo {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
     padding: 1rem;
@@ -303,6 +329,11 @@ body {
     border-radius: 16px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.logo-content {
+    display: flex;
+    align-items: center;
 }
 
 .header-logo img {
@@ -604,31 +635,34 @@ body {
     position: relative;
     padding: 1.25rem;
     border-radius: 12px;
-    background: linear-gradient(145deg, #f8fafc, #f1f5f9);
-    box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05), 
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+    box-shadow: 0 8px 20px -3px rgba(0, 0, 0, 0.15), 
+                0 4px 12px -2px rgba(0, 0, 0, 0.08),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.9);
-    border: 1px solid #e2e8f0;
+    border: 2px solid #e2e8f0;
     transition: all 0.3s ease;
 }
 
 .config-settings-container:hover {
-    box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.08), 
+    box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.2), 
+                0 6px 15px -3px rgba(0, 0, 0, 0.12),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.9);
     transform: translateY(-1px);
+    border-color: #cbd5e1;
 }
 
 .power-button-outer-container {
     position: relative;
-    width: 120px;
-    height: 180px;
+    width: 180px;
+    height: 214px;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at center, rgba(25, 25, 25, 0.03) 0%, rgba(25, 25, 25, 0.06) 100%);
-    border-radius: 16px;
-    padding: 10px;
+    background: transparent;
+    border-radius: 15px;
+    padding: 0;
     margin-left: 15px;
-    box-shadow: 0 10px 15px -5px rgba(0, 0, 0, 0.15);
+    box-shadow: none;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     overflow: visible;
     transform-style: preserve-3d;
@@ -644,18 +678,18 @@ body {
 /* Enhanced glow effect around the power button container when active */
 .power-button-outer-container.active {
     box-shadow: 
-        0 0 15px 2px rgba(255, 51, 51, 0.3),
-        0 0 30px 5px rgba(255, 51, 51, 0.1),
-        0 0 45px 10px rgba(255, 51, 51, 0.05);
+        0 0 15px 2px rgba(239, 68, 68, 0.3),
+        0 0 30px 5px rgba(239, 68, 68, 0.1),
+        0 0 45px 10px rgba(239, 68, 68, 0.05);
     animation: power-glow-pulse 3s infinite;
 }
 
 /* Enhanced glow effect around the power button container when active */
 .power-button-outer-container.active {
     box-shadow: 
-        0 0 15px 2px rgba(255, 51, 51, 0.3),
-        0 0 30px 5px rgba(255, 51, 51, 0.1),
-        0 0 45px 10px rgba(255, 51, 51, 0.05);
+        0 0 15px 2px rgba(239, 68, 68, 0.3),
+        0 0 30px 5px rgba(239, 68, 68, 0.1),
+        0 0 45px 10px rgba(239, 68, 68, 0.05);
     animation: power-glow-pulse 3s infinite;
 }
 
@@ -674,48 +708,50 @@ body {
 
 .power-button-outer-container.active .power-button-glow {
     opacity: 1;
-    box-shadow: inset 0 0 15px 2px rgba(255, 51, 51, 0.5);
+    box-shadow: inset 0 0 15px 2px rgba(239, 68, 68, 0.5);
     animation: inner-glow-pulse 2s infinite alternate;
 }
 
 @keyframes power-glow-pulse {
     0% {
         box-shadow: 
-            0 0 15px 2px rgba(255, 51, 51, 0.3),
-            0 0 30px 5px rgba(255, 51, 51, 0.1),
-            0 0 45px 10px rgba(255, 51, 51, 0.05);
+            0 0 15px 2px rgba(239, 68, 68, 0.3),
+            0 0 30px 5px rgba(239, 68, 68, 0.1),
+            0 0 45px 10px rgba(239, 68, 68, 0.05);
     }
     50% {
         box-shadow: 
-            0 0 20px 3px rgba(255, 51, 51, 0.4),
-            0 0 40px 8px rgba(255, 51, 51, 0.2),
-            0 0 50px 12px rgba(255, 51, 51, 0.1);
+            0 0 20px 3px rgba(239, 68, 68, 0.4),
+            0 0 40px 8px rgba(239, 68, 68, 0.2),
+            0 0 50px 12px rgba(239, 68, 68, 0.1);
     }
     100% {
         box-shadow: 
-            0 0 15px 2px rgba(255, 51, 51, 0.3),
-            0 0 30px 5px rgba(255, 51, 51, 0.1),
-            0 0 45px 10px rgba(255, 51, 51, 0.05);
+            0 0 15px 2px rgba(239, 68, 68, 0.3),
+            0 0 30px 5px rgba(239, 68, 68, 0.1),
+            0 0 45px 10px rgba(239, 68, 68, 0.05);
     }
 }
 
 @keyframes inner-glow-pulse {
     from {
-        box-shadow: inset 0 0 15px 2px rgba(255, 51, 51, 0.5);
+        box-shadow: inset 0 0 15px 2px rgba(239, 68, 68, 0.5);
     }
     to {
-        box-shadow: inset 0 0 20px 4px rgba(255, 51, 51, 0.7);
+        box-shadow: inset 0 0 20px 4px rgba(239, 68, 68, 0.7);
     }
 }
 
-/* Power button iframe styling - ensure rounded corners and proper dimensions */
+/* Power button iframe styling - ensure proper dimensions and transparency */
 #power-button-frame {
-    width: 100%;
-    height: 100%;
+    width: 180px;
+    height: 214px;
     border: none;
-    border-radius: 16px;
+    border-radius: 15px;
     overflow: hidden;
     background: transparent;
+    transform: scale(1);
+    transition: transform 0.3s ease;
 }
 
 /* Power Button Styling - Directly incorporated from power-button.html */
@@ -1041,4 +1077,411 @@ body {
         transform: scale(1.1);
         opacity: 0.6;
     }
+}
+
+/* ===== DARK MODE STYLES ===== */
+
+/* Theme Toggle Button */
+.theme-toggle {
+    background: none;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+}
+
+.theme-toggle:hover {
+    border-color: #25D366;
+    color: #25D366;
+    transform: scale(1.05);
+}
+
+/* Dark mode styles */
+[data-theme="dark"] {
+    background-color: #0f172a;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] body {
+    background-color: #0f172a;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .card {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .form-control {
+    background-color: #334155;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .form-control:hover {
+    border-color: #64748b;
+}
+
+[data-theme="dark"] .form-control:focus {
+    border-color: #25D366;
+    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2);
+}
+
+[data-theme="dark"] .btn-secondary {
+    background-color: #334155;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+    background-color: #475569;
+    border-color: #64748b;
+}
+
+[data-theme="dark"] .btn-secondary:disabled {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #64748b;
+}
+
+[data-theme="dark"] .theme-toggle {
+    border-color: #475569;
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+    border-color: #25D366;
+    color: #25D366;
+}
+
+[data-theme="dark"] .header-logo {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .log-item {
+    background-color: #334155;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .log-item.error {
+    background-color: #7f1d1d;
+    border-color: #991b1b;
+    color: #fecaca;
+}
+
+[data-theme="dark"] .log-container {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .qr-container {
+    background-color: #334155;
+    border-color: #475569;
+}
+
+[data-theme="dark"] .qr-container p {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .transfer-card {
+    background-color: #334155;
+    border-color: #475569;
+}
+
+[data-theme="dark"] .progress-bar {
+    background-color: #475569;
+}
+
+[data-theme="dark"] .progress-fill {
+    background-color: #25D366;
+}
+
+[data-theme="dark"] .chat-item {
+    background-color: #334155;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .chat-item:hover {
+    background-color: #475569;
+}
+
+[data-theme="dark"] .chat-item.selected {
+    background-color: #22543d;
+    border-color: #25D366;
+}
+
+[data-theme="dark"] .chat-dropdown {
+    background-color: #1e293b;
+    border-color: #475569;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .chat-dropdown::-webkit-scrollbar-track {
+    background: #334155;
+}
+
+[data-theme="dark"] .chat-dropdown::-webkit-scrollbar-thumb {
+    background-color: #64748b;
+}
+
+[data-theme="dark"] .chat-option {
+    color: #e2e8f0;
+    border-bottom-color: #334155;
+}
+
+[data-theme="dark"] .chat-option:hover {
+    background-color: #334155;
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .chat-option.active {
+    background-color: #064e3b;
+    color: #6ee7b7;
+    border-left-color: #25D366;
+}
+
+[data-theme="dark"] .search-icon {
+    color: #64748b;
+}
+
+[data-theme="dark"] #selected-chat-display {
+    background-color: #064e3b;
+    color: #6ee7b7;
+    border-color: #047857;
+}
+
+[data-theme="dark"] .chat-category {
+    background-color: #334155;
+    color: #94a3b8;
+    border-bottom-color: #475569;
+}
+
+[data-theme="dark"] .custom-select-container .form-control {
+    background-color: #334155;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .custom-select-container .form-control::placeholder {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .custom-select-container .form-control:focus {
+    border-color: #25D366;
+    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2);
+}
+
+[data-theme="dark"] .no-results {
+    color: #64748b;
+    background-color: #1e293b;
+}
+
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3 {
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .text-gray-500 {
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .text-gray-600 {
+    color: #64748b !important;
+}
+
+[data-theme="dark"] .config-settings-container {
+    background: linear-gradient(145deg, #334155, #1e293b);
+    box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.3), 
+                inset 0 0 0 1px rgba(100, 116, 139, 0.3);
+    border-color: #475569;
+}
+
+[data-theme="dark"] .config-settings-container:hover {
+    box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.4), 
+                inset 0 0 0 1px rgba(100, 116, 139, 0.3);
+}
+
+/* Power Button Dark Mode Styles */
+[data-theme="dark"] .power-button-outer-container {
+    background: radial-gradient(circle at center, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+    box-shadow: 0 10px 15px -5px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .power-button-outer-container:hover {
+    box-shadow: 0 15px 20px -8px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .power-button-outer-container.active {
+    box-shadow: 
+        0 0 15px 2px rgba(239, 68, 68, 0.4),
+        0 0 30px 5px rgba(239, 68, 68, 0.2),
+        0 0 45px 10px rgba(239, 68, 68, 0.1);
+    animation: power-glow-pulse-dark 3s infinite;
+}
+
+[data-theme="dark"] .power-button-outer-container.active .power-button-glow {
+    box-shadow: inset 0 0 15px 2px rgba(239, 68, 68, 0.6);
+    animation: inner-glow-pulse-dark 2s infinite alternate;
+}
+
+[data-theme="dark"] .control-panel {
+    background: linear-gradient(145deg, #334155, #1e293b);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.7),
+        0 5px 15px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px rgba(100, 116, 139, 0.2);
+}
+
+[data-theme="dark"] .control-panel::after {
+    background: linear-gradient(to bottom, rgba(148, 163, 184, 0.1), transparent);
+}
+
+[data-theme="dark"] .power-rim {
+    background: linear-gradient(145deg, #475569, #334155);
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.7),
+        inset 0 0 0 1px rgba(148, 163, 184, 0.2);
+}
+
+[data-theme="dark"] .power-button {
+    background: linear-gradient(145deg, #64748b, #475569);
+    box-shadow:
+        0 8px 16px rgba(0, 0, 0, 0.8),
+        0 4px 8px rgba(0, 0, 0, 0.6),
+        inset 0 0 0 1px rgba(148, 163, 184, 0.2),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.4),
+        inset 0 3px 6px rgba(226, 232, 240, 0.2);
+}
+
+[data-theme="dark"] .button-inner {
+    background: radial-gradient(circle at 30% 30%, #64748b, #475569);
+    box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .power-button::after {
+    background: linear-gradient(to bottom, rgba(226, 232, 240, 0.15), transparent);
+}
+
+[data-theme="dark"] .power-button:hover .button-inner {
+    background: radial-gradient(circle at 30% 30%, #71809b, #475569);
+}
+
+[data-theme="dark"] .power-button:active .button-inner {
+    background: radial-gradient(circle at 30% 30%, #5a6b85, #3c4c63);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .power-icon {
+    stroke: #cbd5e1;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+[data-theme="dark"] .power-button.active {
+    box-shadow:
+        0 8px 16px rgba(0, 0, 0, 0.8),
+        0 4px 8px rgba(0, 0, 0, 0.6),
+        inset 0 0 0 1px rgba(148, 163, 184, 0.2),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.4),
+        inset 0 3px 6px rgba(226, 232, 240, 0.2),
+        0 0 20px 5px rgba(239, 68, 68, 0.8);
+}
+
+[data-theme="dark"] .power-button.active .power-icon {
+    stroke: #ef4444;
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.8));
+}
+
+[data-theme="dark"] .outer-glow {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0) 70%);
+}
+
+[data-theme="dark"] .inner-glow {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0) 70%);
+}
+
+[data-theme="dark"] .status-led {
+    background-color: #475569;
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .status-led.active {
+    background-color: #ef4444;
+    box-shadow:
+        0 0 5px 2px rgba(239, 68, 68, 0.8),
+        0 0 10px 5px rgba(239, 68, 68, 0.4),
+        inset 0 0 2px rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .status-text {
+    color: #94a3b8;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .status-text.active {
+    color: #ef4444;
+    text-shadow:
+        0 0 5px rgba(239, 68, 68, 0.8),
+        0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .screw {
+    background: linear-gradient(145deg, #64748b, #475569);
+    box-shadow:
+        inset 0 0 3px rgba(0, 0, 0, 0.9),
+        0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+[data-theme="dark"] .screw::after {
+    background-color: #1e293b;
+    box-shadow: 0 0 1px rgba(226, 232, 240, 0.3);
+}
+
+/* Dark mode animations for power button */
+@keyframes power-glow-pulse-dark {
+    0% {
+        box-shadow: 
+            0 0 15px 2px rgba(239, 68, 68, 0.4),
+            0 0 30px 5px rgba(239, 68, 68, 0.2),
+            0 0 45px 10px rgba(239, 68, 68, 0.1);
+    }
+    50% {
+        box-shadow: 
+            0 0 20px 3px rgba(239, 68, 68, 0.5),
+            0 0 40px 8px rgba(239, 68, 68, 0.3),
+            0 0 50px 12px rgba(239, 68, 68, 0.15);
+    }
+    100% {
+        box-shadow: 
+            0 0 15px 2px rgba(239, 68, 68, 0.4),
+            0 0 30px 5px rgba(239, 68, 68, 0.2),
+            0 0 45px 10px rgba(239, 68, 68, 0.1);
+    }
+}
+
+@keyframes inner-glow-pulse-dark {
+    from {
+        box-shadow: inset 0 0 15px 2px rgba(239, 68, 68, 0.6);
+    }
+    to {
+        box-shadow: inset 0 0 20px 4px rgba(239, 68, 68, 0.8);
+    }
+}
+
+/* Smooth transitions for theme switching */
+body, .card, .form-control, .btn-secondary, .theme-toggle, .log-item, .log-container, .qr-container, .transfer-card, .chat-item, .power-button-outer-container, .control-panel, .power-rim, .power-button, .button-inner, .power-icon, .status-led, .status-text, .screw {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, stroke 0.3s ease, box-shadow 0.3s ease;
 }

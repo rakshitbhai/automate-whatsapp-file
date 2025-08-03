@@ -1,690 +1,872 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Premium Power Button</title>
     <style>
-        :root {
-            --button-size: 100px;
-            --active-color: #ff3333;
-            --glow-color: rgba(255, 51, 51, 0.7);
-            --button-bg: #222;
-            --button-top: #333;
-            --button-shadow: rgba(0, 0, 0, 0.8);
-            --reflection-color: rgba(255, 255, 255, 0.07);
+      :root {
+        --button-size: 80px;
+        --active-color: #ff3333;
+        --glow-color: rgba(255, 51, 51, 0.7);
+        --button-bg: #222;
+        --button-top: #333;
+        --button-shadow: rgba(0, 0, 0, 0.8);
+        --reflection-color: rgba(255, 255, 255, 0.07);
+        --panel-bg-start: #1c1c1c;
+        --panel-bg-end: #0c0c0c;
+        --body-bg: radial-gradient(ellipse at center, #1a1a1a 0%, #0a0a0a 100%);
+        --text-color: #555;
+        --text-active-color: #ff3333;
+        --led-bg: #333;
+        --screw-bg-start: #3a3a3a;
+        --screw-bg-end: #222;
+        --screw-line: #111;
+        --environment-overlay: rgba(0, 0, 0, 0.03);
+      }
+
+      /* Dark mode CSS variables */
+      .dark-mode {
+        --panel-bg-start: #374151;
+        --panel-bg-end: #1f2937;
+        --body-bg: radial-gradient(ellipse at center, #0f172a 0%, #020617 100%);
+        --button-bg: #4b5563;
+        --button-top: #6b7280;
+        --text-color: #9ca3af;
+        --text-active-color: #ef4444;
+        --active-color: #ef4444;
+        --glow-color: rgba(239, 68, 68, 0.7);
+        --led-bg: #6b7280;
+        --screw-bg-start: #6b7280;
+        --screw-bg-end: #4b5563;
+        --screw-line: #374151;
+        --reflection-color: rgba(255, 255, 255, 0.1);
+        --environment-overlay: rgba(55, 65, 81, 0.05);
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background: var(--body-bg);
+        font-family: "Arial", sans-serif;
+        overflow: hidden;
+        transition: background 0.3s ease;
+      }
+
+      .environment {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: repeating-linear-gradient(
+          to bottom,
+          var(--environment-overlay) 0px,
+          rgba(0, 0, 0, 0.05) 1px,
+          var(--environment-overlay) 2px
+        );
+        pointer-events: none;
+        opacity: 0.6;
+        transition: background 0.3s ease;
+      }
+
+      .control-panel {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px;
+        background: linear-gradient(
+          145deg,
+          var(--panel-bg-start),
+          var(--panel-bg-end)
+        );
+        border-radius: 16px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5),
+          0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(70, 70, 70, 0.1);
+        transform: perspective(1000px) rotateX(5deg);
+        transition: transform 0.5s ease, background 0.3s ease;
+      }
+
+      .control-panel::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.05),
+          transparent
+        );
+        border-radius: 20px 20px 0 0;
+        pointer-events: none;
+      }
+
+      .control-panel:hover {
+        transform: perspective(1000px) rotateX(0deg);
+      }
+
+      .power-button-container {
+        position: relative;
+        width: var(--button-size);
+        height: var(--button-size);
+        perspective: 800px;
+        z-index: 10;
+      }
+
+      .power-rim {
+        position: absolute;
+        width: calc(var(--button-size) + 16px);
+        height: calc(var(--button-size) + 16px);
+        top: -8px;
+        left: -8px;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #101010, #2a2a2a);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5),
+          inset 0 0 0 1px rgba(100, 100, 100, 0.1);
+        z-index: 1;
+      }
+
+      .power-button {
+        position: relative;
+        width: var(--button-size);
+        height: var(--button-size);
+        border-radius: 50%;
+        background: linear-gradient(145deg, #2e2e2e, #1a1a1a);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        overflow: hidden;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4),
+          inset 0 0 0 1px rgba(70, 70, 70, 0.1),
+          inset 0 -3px 6px rgba(0, 0, 0, 0.2),
+          inset 0 3px 6px rgba(255, 255, 255, 0.1);
+        z-index: 3;
+      }
+
+      .button-inner {
+        position: absolute;
+        width: 90%;
+        height: 90%;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 30% 30%,
+          var(--button-top),
+          var(--button-bg)
+        );
+        box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.25s ease;
+      }
+
+      .power-button::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 40%;
+        top: 0;
+        left: 0;
+        border-radius: 50% 50% 0 0;
+        background: linear-gradient(
+          to bottom,
+          var(--reflection-color),
+          transparent
+        );
+        transform: translateY(-30%);
+        transition: all 0.3s ease;
+        pointer-events: none;
+      }
+
+      .power-button:hover .button-inner {
+        background: radial-gradient(circle at 30% 30%, #3a3a3a, #222);
+        transform: scale(1.02);
+      }
+
+      .power-button:active .button-inner {
+        transform: translateY(2px) scale(0.98);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+        background: radial-gradient(circle at 30% 30%, #2a2a2a, #1a1a1a);
+      }
+
+      .power-icon {
+        width: 28px;
+        height: 28px;
+        stroke: #888;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: all 0.5s ease;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+        z-index: 2;
+      }
+
+      .power-button.active {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4),
+          inset 0 0 0 1px rgba(70, 70, 70, 0.1),
+          inset 0 -3px 6px rgba(0, 0, 0, 0.2),
+          inset 0 3px 6px rgba(255, 255, 255, 0.1),
+          0 0 20px 5px var(--glow-color);
+      }
+
+      .power-button.active .power-icon {
+        stroke: var(--active-color);
+        filter: drop-shadow(0 0 8px var(--glow-color));
+      }
+
+      .outer-glow {
+        position: absolute;
+        width: 140%;
+        height: 140%;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          var(--glow-color) 0%,
+          rgba(239, 68, 68, 0) 70%
+        );
+        opacity: 0;
+        transform: scale(0.7);
+        transition: all 0.5s ease;
+        z-index: 1;
+        filter: blur(10px);
+      }
+
+      .inner-glow {
+        position: absolute;
+        width: 80%;
+        height: 80%;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          var(--glow-color) 0%,
+          rgba(239, 68, 68, 0) 70%
+        );
+        opacity: 0;
+        transition: all 0.5s ease;
+        z-index: 2;
+        filter: blur(5px);
+      }
+
+      .power-button.active .outer-glow {
+        opacity: 0.4;
+        transform: scale(1);
+        animation: pulse-outer 3s infinite;
+      }
+
+      .power-button.active .inner-glow {
+        opacity: 0.6;
+        animation: pulse-inner 2s infinite;
+      }
+
+      @keyframes pulse-outer {
+        0% {
+          transform: scale(0.9);
+          opacity: 0.3;
         }
 
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: radial-gradient(ellipse at center, #1a1a1a 0%, #0a0a0a 100%);
-            font-family: 'Arial', sans-serif;
-            overflow: hidden;
+        50% {
+          opacity: 0.15;
         }
 
-        .environment {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(to bottom,
-                    rgba(0, 0, 0, 0.03) 0px,
-                    rgba(0, 0, 0, 0.05) 1px,
-                    rgba(0, 0, 0, 0.03) 2px);
-            pointer-events: none;
-            opacity: 0.6;
+        100% {
+          transform: scale(1.1);
+          opacity: 0.3;
+        }
+      }
+
+      @keyframes pulse-inner {
+        0% {
+          transform: scale(0.9);
+          opacity: 0.6;
         }
 
-        .control-panel {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px;
-            background: linear-gradient(145deg, #1c1c1c, #0c0c0c);
-            border-radius: 20px;
-            box-shadow:
-                0 20px 50px rgba(0, 0, 0, 0.5),
-                0 5px 15px rgba(0, 0, 0, 0.3),
-                inset 0 0 0 1px rgba(70, 70, 70, 0.1);
-            transform: perspective(1000px) rotateX(5deg);
-            transition: transform 0.5s ease;
+        50% {
+          opacity: 0.3;
         }
 
-        .control-panel::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 40%;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent);
-            border-radius: 20px 20px 0 0;
-            pointer-events: none;
+        100% {
+          transform: scale(1.1);
+          opacity: 0.6;
         }
+      }
 
-        .control-panel:hover {
-            transform: perspective(1000px) rotateX(0deg);
-        }
+      .click-effect {
+        position: absolute;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.8) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        border-radius: 50%;
+        opacity: 0;
+        transform: scale(0);
+        pointer-events: none;
+        z-index: 4;
+      }
 
-        .power-button-container {
-            position: relative;
-            width: var(--button-size);
-            height: var(--button-size);
-            perspective: 800px;
-            z-index: 10;
-        }
+      .status-container {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
 
-        .power-rim {
-            position: absolute;
-            width: calc(var(--button-size) + 16px);
-            height: calc(var(--button-size) + 16px);
-            top: -8px;
-            left: -8px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #101010, #2a2a2a);
-            box-shadow:
-                0 4px 8px rgba(0, 0, 0, 0.5),
-                inset 0 0 0 1px rgba(100, 100, 100, 0.1);
-            z-index: 1;
-        }
+      .status-led {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: var(--led-bg);
+        box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
+        margin-bottom: 8px;
+        transition: all 0.5s ease;
+      }
 
-        .power-button {
-            position: relative;
-            width: var(--button-size);
-            height: var(--button-size);
-            border-radius: 50%;
-            background: linear-gradient(145deg, #2e2e2e, #1a1a1a);
-            border: none;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            overflow: hidden;
-            box-shadow:
-                0 8px 16px rgba(0, 0, 0, 0.6),
-                0 4px 8px rgba(0, 0, 0, 0.4),
-                inset 0 0 0 1px rgba(70, 70, 70, 0.1),
-                inset 0 -3px 6px rgba(0, 0, 0, 0.2),
-                inset 0 3px 6px rgba(255, 255, 255, 0.1);
-            z-index: 3;
-        }
+      .status-led.active {
+        background-color: var(--active-color);
+        box-shadow: 0 0 5px 2px var(--glow-color),
+          0 0 10px 5px var(--glow-color), inset 0 0 2px rgba(255, 255, 255, 0.8);
+      }
 
-        .button-inner {
-            position: absolute;
-            width: 90%;
-            height: 90%;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, var(--button-top), var(--button-bg));
-            box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.25s ease;
-        }
+      .status {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: var(--text-color);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        transition: all 0.5s ease;
+      }
 
-        .power-button::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 40%;
-            top: 0;
-            left: 0;
-            border-radius: 50% 50% 0 0;
-            background: linear-gradient(to bottom, var(--reflection-color), transparent);
-            transform: translateY(-30%);
-            transition: all 0.3s ease;
-            pointer-events: none;
-        }
+      .status.active {
+        color: var(--active-color);
+        text-shadow: 0 0 5px var(--glow-color), 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
 
-        .power-button:hover .button-inner {
-            background: radial-gradient(circle at 30% 30%, #3a3a3a, #222);
-            transform: scale(1.02);
-        }
+      .model-label {
+        position: absolute;
+        bottom: 15px;
+        font-size: 10px;
+        color: var(--text-color);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        transition: color 0.3s ease;
+      }
 
-        .power-button:active .button-inner {
-            transform: translateY(2px) scale(0.98);
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
-            background: radial-gradient(circle at 30% 30%, #2a2a2a, #1a1a1a);
-        }
+      /* Metal screws decoration */
+      .screw {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: linear-gradient(
+          145deg,
+          var(--screw-bg-start),
+          var(--screw-bg-end)
+        );
+        box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.8),
+          0 1px 2px rgba(0, 0, 0, 0.5);
+        transition: background 0.3s ease;
+      }
 
-        .power-icon {
-            width: 36px;
-            height: 36px;
-            stroke: #888;
-            stroke-width: 2.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            transition: all 0.5s ease;
-            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-            z-index: 2;
-        }
+      .screw::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 3px;
+        height: 1px;
+        background-color: var(--screw-line);
+        transform: translate(-50%, -50%);
+        transition: background-color 0.3s ease;
+      }
 
-        .power-button.active {
-            box-shadow:
-                0 8px 16px rgba(0, 0, 0, 0.6),
-                0 4px 8px rgba(0, 0, 0, 0.4),
-                inset 0 0 0 1px rgba(70, 70, 70, 0.1),
-                inset 0 -3px 6px rgba(0, 0, 0, 0.2),
-                inset 0 3px 6px rgba(255, 255, 255, 0.1),
-                0 0 20px 5px var(--glow-color);
-        }
+      .screw:nth-child(1) {
+        top: 12px;
+        left: 12px;
+      }
 
-        .power-button.active .power-icon {
-            stroke: var(--active-color);
-            filter: drop-shadow(0 0 8px var(--glow-color));
-        }
+      .screw:nth-child(2) {
+        top: 12px;
+        right: 12px;
+      }
 
-        .outer-glow {
-            position: absolute;
-            width: 140%;
-            height: 140%;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--glow-color) 0%, rgba(255, 51, 51, 0) 70%);
-            opacity: 0;
-            transform: scale(0.7);
-            transition: all 0.5s ease;
-            z-index: 1;
-            filter: blur(10px);
-        }
+      .screw:nth-child(3) {
+        bottom: 12px;
+        left: 12px;
+      }
 
-        .inner-glow {
-            position: absolute;
-            width: 80%;
-            height: 80%;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--glow-color) 0%, rgba(255, 51, 51, 0) 70%);
-            opacity: 0;
-            transition: all 0.5s ease;
-            z-index: 2;
-            filter: blur(5px);
-        }
+      .screw:nth-child(4) {
+        bottom: 12px;
+        right: 12px;
+      }
 
-        .power-button.active .outer-glow {
-            opacity: 0.4;
-            transform: scale(1);
-            animation: pulse-outer 3s infinite;
-        }
+      /* Environment lighting effect */
+      .ambient-light {
+        position: fixed;
+        pointer-events: none;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: radial-gradient(
+          circle at var(--x, 50%) var(--y, 50%),
+          rgba(255, 255, 255, 0.03) 0%,
+          rgba(0, 0, 0, 0) 60%
+        );
+        transition: opacity 0.3s;
+        opacity: 0;
+      }
 
-        .power-button.active .inner-glow {
-            opacity: 0.6;
-            animation: pulse-inner 2s infinite;
-        }
+      .ambient-light.active {
+        opacity: 1;
+      }
 
-        @keyframes pulse-outer {
-            0% {
-                transform: scale(0.9);
-                opacity: 0.3;
-            }
+      /* Dark mode specific enhancements */
+      .dark-mode .control-panel {
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7),
+          0 5px 15px rgba(0, 0, 0, 0.5),
+          inset 0 0 0 1px rgba(107, 114, 128, 0.2);
+      }
 
-            50% {
-                opacity: 0.15;
-            }
+      .dark-mode .control-panel::after {
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.08),
+          transparent
+        );
+      }
 
-            100% {
-                transform: scale(1.1);
-                opacity: 0.3;
-            }
-        }
+      .dark-mode .power-rim {
+        background: linear-gradient(145deg, #374151, #6b7280);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7),
+          inset 0 0 0 1px rgba(156, 163, 175, 0.2);
+      }
 
-        @keyframes pulse-inner {
-            0% {
-                transform: scale(0.9);
-                opacity: 0.6;
-            }
+      .dark-mode .power-button {
+        background: linear-gradient(145deg, #6b7280, #4b5563);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7), 0 4px 8px rgba(0, 0, 0, 0.5),
+          inset 0 0 0 1px rgba(156, 163, 175, 0.2),
+          inset 0 -3px 6px rgba(0, 0, 0, 0.3),
+          inset 0 3px 6px rgba(255, 255, 255, 0.15);
+      }
 
-            50% {
-                opacity: 0.3;
-            }
-
-            100% {
-                transform: scale(1.1);
-                opacity: 0.6;
-            }
-        }
-
-        .click-effect {
-            position: absolute;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
-            border-radius: 50%;
-            opacity: 0;
-            transform: scale(0);
-            pointer-events: none;
-            z-index: 4;
-        }
-
-        .status-container {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .status-led {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #333;
-            box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
-            margin-bottom: 12px;
-            transition: all 0.5s ease;
-        }
-
-        .status-led.active {
-            background-color: var(--active-color);
-            box-shadow:
-                0 0 5px 2px var(--glow-color),
-                0 0 10px 5px rgba(255, 51, 51, 0.3),
-                inset 0 0 2px rgba(255, 255, 255, 0.8);
-        }
-
-        .status {
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #555;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            transition: all 0.5s ease;
-        }
-
-        .status.active {
-            color: var(--active-color);
-            text-shadow:
-                0 0 5px var(--glow-color),
-                0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .model-label {
-            position: absolute;
-            bottom: 15px;
-            font-size: 10px;
-            color: #444;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* Metal screws decoration */
-        .screw {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #3a3a3a, #222);
-            box-shadow:
-                inset 0 0 2px rgba(0, 0, 0, 0.8),
-                0 1px 2px rgba(0, 0, 0, 0.5);
-        }
-
-        .screw::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 4px;
-            height: 1px;
-            background-color: #111;
-            transform: translate(-50%, -50%);
-        }
-
-        .screw:nth-child(1) {
-            top: 15px;
-            left: 15px;
-        }
-
-        .screw:nth-child(2) {
-            top: 15px;
-            right: 15px;
-        }
-
-        .screw:nth-child(3) {
-            bottom: 15px;
-            left: 15px;
-        }
-
-        .screw:nth-child(4) {
-            bottom: 15px;
-            right: 15px;
-        }
-
-        /* Environment lighting effect */
-        .ambient-light {
-            position: fixed;
-            pointer-events: none;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            background: radial-gradient(circle at var(--x, 50%) var(--y, 50%),
-                    rgba(255, 255, 255, 0.03) 0%,
-                    rgba(0, 0, 0, 0) 60%);
-            transition: opacity 0.3s;
-            opacity: 0;
-        }
-
-        .ambient-light.active {
-            opacity: 1;
-        }
+      .dark-mode .ambient-light {
+        background: radial-gradient(
+          circle at var(--x, 50%) var(--y, 50%),
+          rgba(239, 68, 68, 0.05) 0%,
+          rgba(0, 0, 0, 0) 60%
+        );
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="environment"></div>
     <div class="ambient-light"></div>
 
     <div class="control-panel">
-        <div class="screw"></div>
-        <div class="screw"></div>
-        <div class="screw"></div>
-        <div class="screw"></div>
+      <div class="screw"></div>
+      <div class="screw"></div>
+      <div class="screw"></div>
+      <div class="screw"></div>
 
-        <div class="power-button-container">
-            <div class="power-rim"></div>
-            <button id="powerBtn" class="power-button">
-                <div class="outer-glow"></div>
-                <div class="inner-glow"></div>
-                <div class="button-inner">
-                    <svg class="power-icon" viewBox="0 0 24 24" fill="none">
-                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-                        <line x1="12" y1="2" x2="12" y2="12"></line>
-                    </svg>
-                </div>
-            </button>
-        </div>
+      <div class="power-button-container">
+        <div class="power-rim"></div>
+        <button id="powerBtn" class="power-button">
+          <div class="outer-glow"></div>
+          <div class="inner-glow"></div>
+          <div class="button-inner">
+            <svg class="power-icon" viewBox="0 0 24 24" fill="none">
+              <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+              <line x1="12" y1="2" x2="12" y2="12"></line>
+            </svg>
+          </div>
+        </button>
+      </div>
 
-        <div class="status-container">
-            <div id="statusLed" class="status-led"></div>
-            <div id="status" class="status">STANDBY</div>
-        </div>
+      <div class="status-container">
+        <div id="statusLed" class="status-led"></div>
+        <div id="status" class="status">STANDBY</div>
+      </div>
 
-        <div class="model-label">PowerMaster Pro S4</div>
+      <!-- Removed model label for cleaner look -->
     </div>
 
     <script>
-        const powerBtn = document.getElementById('powerBtn');
-        const status = document.getElementById('status');
-        const statusLed = document.getElementById('statusLed');
-        const ambientLight = document.querySelector('.ambient-light');
-        let isPowerOn = false;
-        let isShuttingDown = false;
-        let isEnabled = true; // Track if the button is enabled or disabled
+      const powerBtn = document.getElementById("powerBtn");
+      const status = document.getElementById("status");
+      const statusLed = document.getElementById("statusLed");
+      const ambientLight = document.querySelector(".ambient-light");
+      let isPowerOn = false;
+      let isShuttingDown = false;
+      let isEnabled = true; // Track if the button is enabled or disabled
 
-        // Tell the parent frame that we're loaded
-        window.addEventListener('DOMContentLoaded', function() {
-            // Slight delay to ensure the parent window is ready to receive messages
-            setTimeout(() => {
-                window.parent.postMessage({
-                    type: 'powerButtonLoaded'
-                }, '*');
-                console.log("Power button loaded, notified parent");
-            }, 300);
-        });
+      // Tell the parent frame that we're loaded
+      window.addEventListener("DOMContentLoaded", function () {
+        // Detect and apply parent theme
+        detectParentTheme();
 
-        // Listen for messages from parent frame
-        window.addEventListener('message', function(event) {
-            const data = event.data;
-            
-            if (data.action === 'enablePowerButton') {
-                isEnabled = data.enabled;
-                
-                if (!isEnabled) {
-                    powerBtn.style.opacity = '0.5';
-                    powerBtn.style.pointerEvents = 'none';
-                    status.style.opacity = '0.5';
-                    statusLed.style.opacity = '0.5';
-                } else {
-                    powerBtn.style.opacity = '1';
-                    powerBtn.style.pointerEvents = 'auto';
-                    status.style.opacity = '1';
-                    statusLed.style.opacity = '1';
-                }
-            } else if (data.action === 'setPowerState') {
-                // Set power state without triggering effects
-                if (data.isPowerOn) {
-                    setButtonOn(false);  // Set without sound effects
-                } else {
-                    setButtonOff(false); // Set without sound effects
-                }
-            }
-        });
-
-        // Environmental lighting effect
-        document.addEventListener('mousemove', function (e) {
-            const x = e.clientX / window.innerWidth * 100;
-            const y = e.clientY / window.innerHeight * 100;
-            ambientLight.style.setProperty('--x', `${x}%`);
-            ambientLight.style.setProperty('--y', `${y}%`);
-
-            if (!ambientLight.classList.contains('active')) {
-                ambientLight.classList.add('active');
-            }
-
-            // Clear timeout if exists
-            if (window.ambientTimeout) clearTimeout(window.ambientTimeout);
-
-            // Set timeout to hide ambient light
-            window.ambientTimeout = setTimeout(() => {
-                ambientLight.classList.remove('active');
-            }, 2000);
-        });
-
-        // Power button click ripple effect
-        powerBtn.addEventListener('mousedown', function (e) {
-            if (!isEnabled || isShuttingDown) return;
-
-            const rect = powerBtn.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            const clickEffect = document.createElement('div');
-            clickEffect.classList.add('click-effect');
-            clickEffect.style.width = '120px';
-            clickEffect.style.height = '120px';
-            clickEffect.style.left = `${x - 60}px`;
-            clickEffect.style.top = `${y - 60}px`;
-
-            powerBtn.appendChild(clickEffect);
-
-            // Animate and remove the effect
-            requestAnimationFrame(() => {
-                clickEffect.style.transition = 'all 0.6s ease-out';
-                clickEffect.style.opacity = '0.8';
-                clickEffect.style.transform = 'scale(1)';
-
-                setTimeout(() => {
-                    clickEffect.style.opacity = '0';
-                    setTimeout(() => {
-                        powerBtn.removeChild(clickEffect);
-                    }, 600);
-                }, 100);
+        // Listen for system theme changes
+        if (window.matchMedia) {
+          window
+            .matchMedia("(prefers-color-scheme: dark)")
+            .addEventListener("change", (e) => {
+              // Only auto-switch if parent hasn't set a specific theme
+              if (!document.body.classList.contains("theme-override")) {
+                updatePowerButtonTheme(e.matches ? "dark" : "light");
+              }
             });
-        });
-
-        // Button hover sound effect
-        powerBtn.addEventListener('mouseenter', function () {
-            if (!isEnabled) return;
-
-            const hoverSound = new Audio();
-            hoverSound.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAgAAABIAd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAJzg/+M4wEQBFvgK1BQYgA04A1KAAMDH4QfB8Hz8IQfwQhCEIQjEIP4Pg+D4QhCDwfggCEHg+D4PwfB+EIQhCD+CYPggCYP/wQiEQicQiEQicQicQicQicQicQicQicQiEQikJExBTUUzLjEwMFVVVVVVV';
-            hoverSound.volume = 0.05;
-            hoverSound.play();
-        });
-
-        // Power toggle functionality with enhanced sound effects
-        powerBtn.addEventListener('click', function () {
-            if (!isEnabled || isShuttingDown) return; // Prevent clicks when disabled or shutting down
-
-            if (!isPowerOn) {
-                turnOn();
-            } else {
-                shutDown();
-            }
-
-            // Notify the parent window about state change
-            window.parent.postMessage({
-                type: 'powerButtonStateChanged',
-                isPowerOn: isPowerOn
-            }, '*');
-        });
-
-        function turnOn() {
-            isPowerOn = true;
-            setButtonOn(true);
-            
-            // Also tell the parent to add the active class to the container for enhanced glow
-            window.parent.postMessage({
-                type: 'powerButtonContainerActive',
-                isActive: true
-            }, '*');
         }
 
-        function setButtonOn(playSound = true) {
-            powerBtn.classList.add('active');
-            status.classList.add('active');
-            statusLed.classList.add('active');
-            status.textContent = 'ACTIVE';
+        // Slight delay to ensure the parent window is ready to receive messages
+        setTimeout(() => {
+          window.parent.postMessage(
+            {
+              type: "powerButtonLoaded",
+            },
+            "*"
+          );
+          console.log("Power button loaded, notified parent");
+        }, 300);
+      });
 
-            if (playSound) {
-                // Enhanced power-on sound effect with cinematic activation sequence
-                const powerOnSound = new Audio();
-                powerOnSound.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAADwAAAX8AT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09P//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAEADpxFDqAAAAAAAAAAAAAAAA/+MYxAAAAANIAAAAAExBTUUzLjEwMAGqqqqqq';
-                powerOnSound.volume = 0.3;
-                powerOnSound.play();
+      // Listen for messages from parent frame
+      window.addEventListener("message", function (event) {
+        const data = event.data;
 
-                // Add new premium activation sound effect with cinematic feel (better quality sound)
-                setTimeout(() => {
-                    const premiumActivationSound = new Audio();
-                    premiumActivationSound.src = 'data:audio/mp3;base64,SUQzAwAAAAFjVFQyAAAAEwAAA1RhZ2dlZCB3aXRoIGVhc3lUQUcMVFNTRQAAADgAAANMYXYgNTcuMTkuMTAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQmFzZTY0IGF1ZGlvIGRhdGEAS1NTC/+AWQAAAFRQRTEAAACUAAACAUWAJAjAAAAAAAN0qJsSQAmCbHA//uy64EBF9hGGMY/B9Ew9if//+UT+c6flU76Ox////nPT1CEIQhBCDPF9nnF8HL/lcoMYPWc4/5Q7/+I1jGP////////lvcccuXSCEHP/mDGMyQhB///5znOcfh//+MYxAASGZJYAPBGTDM5x+Xw//LnOc5wEOc5zlAgQIECBOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5z/+MYxCIPWZZoAPhMTHOc5znOc5znOc5znOc5znOc5znOc5znECAQIECBAgQhCEIQhCEIQhCEQQhCEIQnIQhCEIQoEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIT/+MYxG4AAANIAAAAAIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEL/';
-                    premiumActivationSound.volume = 0.4;
-                    premiumActivationSound.play();
-                }, 300);
+        if (data.action === "enablePowerButton") {
+          isEnabled = data.enabled;
 
-                // Advanced electronic startup sequence sound
-                setTimeout(() => {
-                    const startupSound = new Audio();
-                    startupSound.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAABAAAACgAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39///////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAYUg/+M4wA8BmPkCxhGCAJngVioABBCNAYgmDnxC/8ZdheId8uhy5+YeD7tQffhjvyzC+IQfqHz4PwQhCAIf+oIAg+5CEHwfgg/EPgg/8QQ+D4IQhCEHwf/EHwQhCEIQhCEIPg+D4Pg+CAIQhB8Hggcg';
-                    startupSound.volume = 0.25;
-                    startupSound.play();
-                }, 600);
+          if (!isEnabled) {
+            powerBtn.style.opacity = "0.5";
+            powerBtn.style.pointerEvents = "none";
+            status.style.opacity = "0.5";
+            statusLed.style.opacity = "0.5";
+          } else {
+            powerBtn.style.opacity = "1";
+            powerBtn.style.pointerEvents = "auto";
+            status.style.opacity = "1";
+            statusLed.style.opacity = "1";
+          }
+        } else if (data.action === "setPowerState") {
+          // Set power state without triggering effects
+          if (data.isPowerOn) {
+            setButtonOn(false); // Set without sound effects
+          } else {
+            setButtonOff(false); // Set without sound effects
+          }
+        } else if (data.action === "updateTheme") {
+          // Handle theme changes from parent
+          updatePowerButtonTheme(data.theme);
+        }
+      });
 
-                // Create a shimmering ambient pad sound for even more premium feel
-                setTimeout(() => {
-                    const ambientPad = new Audio();
-                    ambientPad.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAEwAAAiAAQEBAQEBAQEBgYGBgYGBgYICAgICAgICgoKCgoKCgoMDAwMDAwMDA4ODg4ODg4OD///////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJANEgwAAAAAAAAAA/+MYxAAHGAKcAVNAAHhAL37A/QE0YAwEAUAS2IGBlwIPgQAH/lQxgBgIOwLDHyn/KBj/5QMf/+IRjiEo5jGPzQw53KQiDgQe/+MYxAsI8Gay+ZdAAKADEHPkOc5znAQc/8uAgQJznOc5znQEHP//nOc5znOc5znOc5znOc5znOc5znOc5znOlAhCEIQhCEIQhCEIQhCEIQhCEIQhVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
-                    ambientPad.volume = 0.15;
-                    ambientPad.play();
-                }, 900);
+      // Function to update power button theme
+      function updatePowerButtonTheme(theme) {
+        const body = document.body;
 
-                // Simulate haptic feedback with enhanced pattern for premium feel
-                if (navigator.vibrate) {
-                    navigator.vibrate([10, 20, 30, 20, 40, 60, 80]);
-                }
-            }
+        if (theme === "dark") {
+          body.classList.add("dark-mode");
+        } else {
+          body.classList.remove("dark-mode");
         }
 
-        function shutDown() {
-            isShuttingDown = true;
-            status.textContent = 'SHUTTING DOWN...';
+        // Inform parent about theme change acknowledgment
+        window.parent.postMessage(
+          {
+            type: "powerButtonThemeChanged",
+            theme: theme,
+          },
+          "*"
+        );
+      }
 
-            // Add advanced power-off sound effect with shutdown sequence
-            const powerOffSound = new Audio();
-            powerOffSound.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAABAAAACgAfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19///////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAXkQ/+M4wBYBqPsDBhGCAI3gIjMAAyMDFCVP//EMED0IIICXKlEHg+D4PvggCD7kIQhCH3IhEIhE4hEIhEIhEIhEIhEIhE4hE4hEInEInF8QiEQiETiEQiEQiEQiEQiEQiEQiEQiEQiEQiEQicQiEQgKQ';
-            powerOffSound.volume = 0.3;
-            powerOffSound.play();
+      // Function to detect parent theme on load
+      function detectParentTheme() {
+        try {
+          // Try to detect parent document theme
+          const parentDoc = window.parent.document;
+          if (parentDoc && parentDoc.documentElement) {
+            const theme = parentDoc.documentElement.getAttribute("data-theme");
+            if (theme) {
+              updatePowerButtonTheme(theme);
+              return;
+            }
+          }
+        } catch (e) {
+          // Cross-origin restrictions - use message to request theme
+          window.parent.postMessage(
+            {
+              type: "requestTheme",
+            },
+            "*"
+          );
+        }
 
-            // Create electronic shutdown sequence
+        // Fallback: detect system dark mode preference
+        if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
+          updatePowerButtonTheme("dark");
+        }
+      }
+
+      // Environmental lighting effect
+      document.addEventListener("mousemove", function (e) {
+        const x = (e.clientX / window.innerWidth) * 100;
+        const y = (e.clientY / window.innerHeight) * 100;
+        ambientLight.style.setProperty("--x", `${x}%`);
+        ambientLight.style.setProperty("--y", `${y}%`);
+
+        if (!ambientLight.classList.contains("active")) {
+          ambientLight.classList.add("active");
+        }
+
+        // Clear timeout if exists
+        if (window.ambientTimeout) clearTimeout(window.ambientTimeout);
+
+        // Set timeout to hide ambient light
+        window.ambientTimeout = setTimeout(() => {
+          ambientLight.classList.remove("active");
+        }, 2000);
+      });
+
+      // Power button click ripple effect
+      powerBtn.addEventListener("mousedown", function (e) {
+        if (!isEnabled || isShuttingDown) return;
+
+        const rect = powerBtn.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const clickEffect = document.createElement("div");
+        clickEffect.classList.add("click-effect");
+        clickEffect.style.width = "120px";
+        clickEffect.style.height = "120px";
+        clickEffect.style.left = `${x - 60}px`;
+        clickEffect.style.top = `${y - 60}px`;
+
+        powerBtn.appendChild(clickEffect);
+
+        // Animate and remove the effect
+        requestAnimationFrame(() => {
+          clickEffect.style.transition = "all 0.6s ease-out";
+          clickEffect.style.opacity = "0.8";
+          clickEffect.style.transform = "scale(1)";
+
+          setTimeout(() => {
+            clickEffect.style.opacity = "0";
             setTimeout(() => {
-                const shutdownSound = new Audio();
-                shutdownSound.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAACQAsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCw////////////////////////////////////////////////////////////////AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAYEw/+M4wBIBrvkCUiMEAOHABJYAARkfn//uJbwhxDwQf+IXgg/8EPiD/gg+CH3wQhCEIQhCEIPg+D4P4Pg+D4Pg+D4P+EP+D4PiEIQhCEIQg+CAIAhD4IPggCD4IAgCEPggCEIQhCELP0';
-                shutdownSound.volume = 0.2;
-                shutdownSound.play();
-            }, 200);
+              powerBtn.removeChild(clickEffect);
+            }, 600);
+          }, 100);
+        });
+      });
 
-            // Simulate haptic feedback with pattern
-            if (navigator.vibrate) {
-                navigator.vibrate([70, 50, 30, 20, 10]);
-            }
+      // Button hover sound effect
+      powerBtn.addEventListener("mouseenter", function () {
+        if (!isEnabled) return;
 
-            // Visual shutdown sequence with delay
-            let opacityValue = 1;
-            const fadeInterval = setInterval(() => {
-                opacityValue -= 0.05;
-                powerBtn.style.opacity = opacityValue;
-                statusLed.style.opacity = opacityValue;
-            }, 100);
+        const hoverSound = new Audio();
+        hoverSound.src =
+          "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAgAAABIAd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAJzg/+M4wEQBFvgK1BQYgA04A1KAAMDH4QfB8Hz8IQfwQhCEIQjEIP4Pg+D4QhCDwfggCEHg+D4PwfB+EIQhCD+CYPggCYP/wQiEQicQiEQicQicQicQicQicQicQicQiEQikJExBTUUzLjEwMFVVVVVVV";
+        hoverSound.volume = 0.05;
+        hoverSound.play();
+      });
 
-            // Complete shutdown after delay
-            setTimeout(() => {
-                clearInterval(fadeInterval);
-                isPowerOn = false;
-                isShuttingDown = false;
-                setButtonOff(false); // Set without sound effects
-                powerBtn.style.opacity = 1;
-                statusLed.style.opacity = 1;
-            }, 2000);
+      // Power toggle functionality with enhanced sound effects
+      powerBtn.addEventListener("click", function () {
+        if (!isEnabled || isShuttingDown) return; // Prevent clicks when disabled or shutting down
+
+        if (!isPowerOn) {
+          turnOn();
+        } else {
+          shutDown();
         }
 
-        function setButtonOff(playSound = true) {
-            powerBtn.classList.remove('active');
-            status.classList.remove('active');
-            statusLed.classList.remove('active');
-            status.textContent = 'STANDBY';
+        // Notify the parent window about state change
+        window.parent.postMessage(
+          {
+            type: "powerButtonStateChanged",
+            isPowerOn: isPowerOn,
+          },
+          "*"
+        );
+      });
 
-            if (playSound) {
-                // Similar sound effects as shutDown but simpler
-                const powerOffSound = new Audio();
-                powerOffSound.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAACQAsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCw////////////////////////////////////////////////////////////////AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAYEw/+M4wBIBrvkCUiMEAOHABJYAARkfn//uJbwhxDwQf+IXgg/8EPiD/gg+CH3wQhCEIQhCEIPg+D4P4Pg+D4Pg+D4P+EP+D4PiEIQhCEIQg+CAIAhD4IPggCD4IAgCEPggCEIQhCELP0';
-                powerOffSound.volume = 0.1;
-                powerOffSound.play();
-            }
+      function turnOn() {
+        isPowerOn = true;
+        setButtonOn(true);
+
+        // Also tell the parent to add the active class to the container for enhanced glow
+        window.parent.postMessage(
+          {
+            type: "powerButtonContainerActive",
+            isActive: true,
+          },
+          "*"
+        );
+      }
+
+      function setButtonOn(playSound = true) {
+        powerBtn.classList.add("active");
+        status.classList.add("active");
+        statusLed.classList.add("active");
+        status.textContent = "SHUTDOWN";
+
+        if (playSound) {
+          // Enhanced power-on sound effect with cinematic activation sequence
+          const powerOnSound = new Audio();
+          powerOnSound.src =
+            "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAADwAAAX8AT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09P//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAEADpxFDqAAAAAAAAAAAAAAAA/+MYxAAAAANIAAAAAExBTUUzLjEwMAGqqqqqq";
+          powerOnSound.volume = 0.3;
+          powerOnSound.play();
+
+          // Add new premium activation sound effect with cinematic feel (better quality sound)
+          setTimeout(() => {
+            const premiumActivationSound = new Audio();
+            premiumActivationSound.src =
+              "data:audio/mp3;base64,SUQzAwAAAAFjVFQyAAAAEwAAA1RhZ2dlZCB3aXRoIGVhc3lUQUcMVFNTRQAAADgAAANMYXYgNTcuMTkuMTAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQmFzZTY0IGF1ZGlvIGRhdGEAS1NTC/+AWQAAAFRQRTEAAACUAAACAUWAJAjAAAAAAAN0qJsSQAmCbHA//uy64EBF9hGGMY/B9Ew9if//+UT+c6flU76Ox////nPT1CEIQhBCDPF9nnF8HL/lcoMYPWc4/5Q7/+I1jGP////////lvcccuXSCEHP/mDGMyQhB///5znOcfh//+MYxAASGZJYAPBGTDM5x+Xw//LnOc5wEOc5zlAgQIECBOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5znOc5z/+MYxCIPWZZoAPhMTHOc5znOc5znOc5znOc5znOc5znOc5znECAQIECBAgQhCEIQhCEIQhCEQQhCEIQnIQhCEIQoEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIT/+MYxG4AAANIAAAAAIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEIQhCEL/";
+            premiumActivationSound.volume = 0.4;
+            premiumActivationSound.play();
+          }, 300);
+
+          // Advanced electronic startup sequence sound
+          setTimeout(() => {
+            const startupSound = new Audio();
+            startupSound.src =
+              "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAABAAAACgAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39///////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAYUg/+M4wA8BmPkCxhGCAJngVioABBCNAYgmDnxC/8ZdheId8uhy5+YeD7tQffhjvyzC+IQfqHz4PwQhCAIf+oIAg+5CEHwfgg/EPgg/8QQ+D4IQhCEHwf/EHwQhCEIQhCEIPg+D4Pg+CAIQhB8Hggcg";
+            startupSound.volume = 0.25;
+            startupSound.play();
+          }, 600);
+
+          // Create a shimmering ambient pad sound for even more premium feel
+          setTimeout(() => {
+            const ambientPad = new Audio();
+            ambientPad.src =
+              "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAEwAAAiAAQEBAQEBAQEBgYGBgYGBgYICAgICAgICgoKCgoKCgoMDAwMDAwMDA4ODg4ODg4OD///////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJANEgwAAAAAAAAAA/+MYxAAHGAKcAVNAAHhAL37A/QE0YAwEAUAS2IGBlwIPgQAH/lQxgBgIOwLDHyn/KBj/5QMf/+IRjiEo5jGPzQw53KQiDgQe/+MYxAsI8Gay+ZdAAKADEHPkOc5znAQc/8uAgQJznOc5znQEHP//nOc5znOc5znOc5znOc5znOc5znOc5znOlAhCEIQhCEIQhCEIQhCEIQhCEIQhVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+            ambientPad.volume = 0.15;
+            ambientPad.play();
+          }, 900);
+
+          // Simulate haptic feedback with enhanced pattern for premium feel
+          if (navigator.vibrate) {
+            navigator.vibrate([10, 20, 30, 20, 40, 60, 80]);
+          }
+        }
+      }
+
+      function shutDown() {
+        isShuttingDown = true;
+        status.textContent = "SHUTTING DOWN...";
+
+        // Add advanced power-off sound effect with shutdown sequence
+        const powerOffSound = new Audio();
+        powerOffSound.src =
+          "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAABAAAACgAfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19///////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAXkQ/+M4wBYBqPsDBhGCAI3gIjMAAyMDFCVP//EMED0IIICXKlEHg+D4PvggCD7kIQhCH3IhEIhE4hEIhEIhEIhEIhEIhE4hE4hEInEInF8QiEQiETiEQiEQiEQiEQiEQiEQiEQiEQiEQiEQicQiEQgKQ";
+        powerOffSound.volume = 0.3;
+        powerOffSound.play();
+
+        // Create electronic shutdown sequence
+        setTimeout(() => {
+          const shutdownSound = new Audio();
+          shutdownSound.src =
+            "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAACQAsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCw////////////////////////////////////////////////////////////////AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAYEw/+M4wBIBrvkCUiMEAOHABJYAARkfn//uJbwhxDwQf+IXgg/8EPiD/gg+CH3wQhCEIQhCEIPg+D4P4Pg+D4Pg+D4P+EP+D4PiEIQhCEIQg+CAIAhD4IPggCD4IAgCEPggCEIQhCELP0";
+          shutdownSound.volume = 0.2;
+          shutdownSound.play();
+        }, 200);
+
+        // Simulate haptic feedback with pattern
+        if (navigator.vibrate) {
+          navigator.vibrate([70, 50, 30, 20, 10]);
         }
 
-        // Simulate power button depression visually
-        powerBtn.addEventListener('mousedown', function () {
-            const buttonInner = document.querySelector('.button-inner');
-            buttonInner.style.transform = 'translateY(3px) scale(0.97)';
-            buttonInner.style.boxShadow = 'inset 0 3px 6px rgba(0, 0, 0, 0.4)';
-        });
+        // Visual shutdown sequence with delay
+        let opacityValue = 1;
+        const fadeInterval = setInterval(() => {
+          opacityValue -= 0.05;
+          powerBtn.style.opacity = opacityValue;
+          statusLed.style.opacity = opacityValue;
+        }, 100);
 
-        document.addEventListener('mouseup', function () {
-            const buttonInner = document.querySelector('.button-inner');
-            if (buttonInner) {
-                buttonInner.style.transform = '';
-                buttonInner.style.boxShadow = '';
-            }
-        });
+        // Complete shutdown after delay
+        setTimeout(() => {
+          clearInterval(fadeInterval);
+          isPowerOn = false;
+          isShuttingDown = false;
+          setButtonOff(false); // Set without sound effects
+          powerBtn.style.opacity = 1;
+          statusLed.style.opacity = 1;
+        }, 2000);
+      }
 
-        // Add dynamic lighting effect based on mouse movement
-        const controlPanel = document.querySelector('.control-panel');
-        controlPanel.addEventListener('mousemove', function (e) {
-            const rect = controlPanel.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+      function setButtonOff(playSound = true) {
+        powerBtn.classList.remove("active");
+        status.classList.remove("active");
+        statusLed.classList.remove("active");
+        status.textContent = "STANDBY";
 
-            // Calculate position relative to center
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
+        if (playSound) {
+          // Similar sound effects as shutDown but simpler
+          const powerOffSound = new Audio();
+          powerOffSound.src =
+            "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAACQAsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCw////////////////////////////////////////////////////////////////AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAYEw/+M4wBIBrvkCUiMEAOHABJYAARkfn//uJbwhxDwQf+IXgg/8EPiD/gg+CH3wQhCEIQhCEIPg+D4P4Pg+D4Pg+D4P+EP+D4PiEIQhCEIQg+CAIAhD4IPggCD4IAgCEPggCEIQhCELP0";
+          powerOffSound.volume = 0.1;
+          powerOffSound.play();
+        }
+      }
 
-            // Calculate rotation based on mouse position
-            const rotateX = (y - centerY) / 30;
-            const rotateY = (centerX - x) / 30;
+      // Simulate power button depression visually
+      powerBtn.addEventListener("mousedown", function () {
+        const buttonInner = document.querySelector(".button-inner");
+        buttonInner.style.transform = "translateY(3px) scale(0.97)";
+        buttonInner.style.boxShadow = "inset 0 3px 6px rgba(0, 0, 0, 0.4)";
+      });
 
-            // Apply subtle rotation
-            controlPanel.style.transform = `perspective(1000px) rotateX(${5 - rotateX}deg) rotateY(${rotateY}deg)`;
-        });
+      document.addEventListener("mouseup", function () {
+        const buttonInner = document.querySelector(".button-inner");
+        if (buttonInner) {
+          buttonInner.style.transform = "";
+          buttonInner.style.boxShadow = "";
+        }
+      });
 
-        // Reset rotation when mouse leaves
-        controlPanel.addEventListener('mouseleave', function () {
-            controlPanel.style.transform = 'perspective(1000px) rotateX(5deg) rotateY(0deg)';
-        });
+      // Add dynamic lighting effect based on mouse movement
+      const controlPanel = document.querySelector(".control-panel");
+      controlPanel.addEventListener("mousemove", function (e) {
+        const rect = controlPanel.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Calculate position relative to center
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        // Calculate rotation based on mouse position
+        const rotateX = (y - centerY) / 30;
+        const rotateY = (centerX - x) / 30;
+
+        // Apply subtle rotation
+        controlPanel.style.transform = `perspective(1000px) rotateX(${
+          5 - rotateX
+        }deg) rotateY(${rotateY}deg)`;
+      });
+
+      // Reset rotation when mouse leaves
+      controlPanel.addEventListener("mouseleave", function () {
+        controlPanel.style.transform =
+          "perspective(1000px) rotateX(5deg) rotateY(0deg)";
+      });
     </script>
-</body>
-
+  </body>
 </html>

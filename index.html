@@ -30,8 +30,43 @@
       </audio>
 
       <div class="header-logo">
-        <img src="assets/icon.png" alt="Chatrik Logo" />
-        <h1>Chatrik</h1>
+        <div class="logo-content">
+          <img src="assets/icon.png" alt="Chatrik Logo" />
+          <h1>Chatrik</h1>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" title="Toggle dark mode">
+          <svg
+            class="sun-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="5"></circle>
+            <path
+              d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+            ></path>
+          </svg>
+          <svg
+            class="moon-icon hidden"
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
       </div>
 
       <div class="card">
@@ -278,44 +313,25 @@
               </p>
             </div>
 
-            <!-- Power button container with direct div implementation -->
+            <!-- Premium Power Button using iframe -->
             <div
               id="power-button-container"
               class="power-button-outer-container"
             >
               <div class="power-button-glow"></div>
-              <div class="environment"></div>
-              <div class="control-panel">
-                <div class="screw"></div>
-                <div class="screw"></div>
-                <div class="screw"></div>
-                <div class="screw"></div>
-
-                <div class="power-button-container">
-                  <div class="power-rim"></div>
-                  <button
-                    id="powerBtn"
-                    class="power-button"
-                    onclick="togglePower()"
-                  >
-                    <div class="outer-glow"></div>
-                    <div class="inner-glow"></div>
-                    <div class="button-inner">
-                      <svg class="power-icon" viewBox="0 0 24 24" fill="none">
-                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-                        <line x1="12" y1="2" x2="12" y2="12"></line>
-                      </svg>
-                    </div>
-                  </button>
-                </div>
-
-                <div class="status-container">
-                  <div id="statusLed" class="status-led"></div>
-                  <div id="status" class="status-text">STANDBY</div>
-                </div>
-
-                <div class="model-label">PowerMaster Pro S4</div>
-              </div>
+              <iframe
+                id="power-button-frame"
+                src="components/power-button.html"
+                sandbox="allow-scripts allow-same-origin"
+                frameborder="0"
+                scrolling="no"
+                style="
+                  width: 180px;
+                  height: 214px;
+                  border: none;
+                  background: transparent;
+                "
+              ></iframe>
             </div>
           </div>
         </div>
@@ -342,7 +358,7 @@
           ></iframe>
         </div>
 
-        <div class="flex space-x-3">
+        <div class="flex space-x-3 flex-wrap">
           <button id="start-btn" class="btn btn-primary" disabled>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -676,6 +692,7 @@
       // Elements
       const connectBtn = document.getElementById("connect-btn");
       const logoutBtn = document.getElementById("logout-btn");
+      const themeToggle = document.getElementById("theme-toggle");
       const selectFolderBtn = document.getElementById("select-folder-btn");
       const folderPathInput = document.getElementById("folder-path");
       const chatSearch = document.getElementById("chat-search");
@@ -743,6 +760,80 @@
       let truckAnimationInitialized = false; // Track if truck iframe has been created
       let isShutdownEnabled = false; // Track if shutdown is enabled
 
+      // Dark mode functionality
+      function initTheme() {
+        // Check for saved theme preference or default to light mode
+        const savedTheme = localStorage.getItem("theme") || "light";
+        applyTheme(savedTheme);
+      }
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+
+        // Update icon visibility
+        const sunIcon = themeToggle.querySelector(".sun-icon");
+        const moonIcon = themeToggle.querySelector(".moon-icon");
+
+        if (theme === "dark") {
+          sunIcon.classList.add("hidden");
+          moonIcon.classList.remove("hidden");
+        } else {
+          sunIcon.classList.remove("hidden");
+          moonIcon.classList.add("hidden");
+        }
+
+        // Send theme update to cat animation iframe
+        if (catAnimationLoaded && catAnimationFrame.contentWindow) {
+          catAnimationFrame.contentWindow.postMessage(
+            {
+              action: "updateTheme",
+              theme: theme,
+            },
+            "*"
+          );
+        }
+
+        // Send theme update to power button iframe
+        const powerButtonFrame = document.getElementById("power-button-frame");
+        if (powerButtonFrame && powerButtonFrame.contentWindow) {
+          powerButtonFrame.contentWindow.postMessage(
+            {
+              action: "updateTheme",
+              theme: theme,
+            },
+            "*"
+          );
+        }
+
+        // Send theme update to truck animation iframe
+        if (
+          truckAnimationLoaded &&
+          truckAnimationFrame &&
+          truckAnimationFrame.contentWindow
+        ) {
+          truckAnimationFrame.contentWindow.postMessage(
+            {
+              action: "updateTheme",
+              theme: theme,
+            },
+            "*"
+          );
+        }
+
+        // Save preference
+        localStorage.setItem("theme", theme);
+      }
+
+      function toggleTheme() {
+        const currentTheme =
+          document.documentElement.getAttribute("data-theme") || "light";
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        applyTheme(newTheme);
+      }
+
+      // Theme toggle event listener
+      themeToggle.addEventListener("click", toggleTheme);
+
       // Lazy loading for iframes
       function observeElement(element, callback) {
         const observer = new IntersectionObserver(
@@ -762,6 +853,9 @@
 
       // Initialize the cat animation iframe when it becomes visible
       document.addEventListener("DOMContentLoaded", () => {
+        // Initialize theme on page load
+        initTheme();
+
         // Setup intersection observer for cat animation
         observeElement(document.querySelector(".animation-container"), () => {
           // Load the cat animation iframe when it scrolls into view
@@ -814,11 +908,69 @@
         if (data.type === "catAnimationLoaded") {
           catAnimationLoaded = true;
           console.log("Cat animation frame loaded");
+
+          // Send current theme to cat animation on load
+          const currentTheme =
+            document.documentElement.getAttribute("data-theme") || "light";
+          if (catAnimationFrame.contentWindow) {
+            catAnimationFrame.contentWindow.postMessage(
+              {
+                action: "updateTheme",
+                theme: currentTheme,
+              },
+              "*"
+            );
+          }
         } else if (data.type === "truckAnimationLoaded") {
           truckAnimationLoaded = true;
           console.log("Truck animation frame loaded");
+
+          // Send current theme to truck animation on load
+          const currentTheme =
+            document.documentElement.getAttribute("data-theme") || "light";
+          if (truckAnimationFrame && truckAnimationFrame.contentWindow) {
+            truckAnimationFrame.contentWindow.postMessage(
+              {
+                action: "updateTheme",
+                theme: currentTheme,
+              },
+              "*"
+            );
+          }
         } else if (data.type === "catStateChanged") {
           console.log("Cat state changed:", data.watching);
+        } else if (data.type === "requestTheme") {
+          // Animation iframes are requesting current theme
+          const currentTheme =
+            document.documentElement.getAttribute("data-theme") || "light";
+
+          // Send to cat animation if loaded
+          if (catAnimationFrame.contentWindow) {
+            catAnimationFrame.contentWindow.postMessage(
+              {
+                action: "updateTheme",
+                theme: currentTheme,
+              },
+              "*"
+            );
+          }
+
+          // Send to truck animation if loaded
+          if (
+            truckAnimationLoaded &&
+            truckAnimationFrame &&
+            truckAnimationFrame.contentWindow
+          ) {
+            truckAnimationFrame.contentWindow.postMessage(
+              {
+                action: "updateTheme",
+                theme: currentTheme,
+              },
+              "*"
+            );
+          }
+        } else if (data.type === "catThemeChanged") {
+          console.log("Cat animation theme updated:", data.theme);
         }
       });
 
@@ -1177,7 +1329,7 @@
             '<span class="status status-disconnected">Disconnected</span>';
           connectBtn.classList.remove("hidden");
           logoutBtn.classList.add("hidden");
-          qrContainer.classList.add("hidden");
+          qrContainer.classList.add("hidden"); // Ensure QR is hidden when disconnected
           loadingIndicator.classList.add("hidden");
           selectFolderBtn.disabled = true;
           folderPathInput.disabled = true;
@@ -1194,6 +1346,7 @@
             '<span class="status status-loading">Connecting...</span>';
           connectBtn.classList.add("hidden");
           loadingIndicator.classList.remove("hidden");
+          qrContainer.classList.add("hidden"); // Hide QR while loading
           selectedChatDisplay.classList.remove("visible"); // Hide the selected chat display while loading
         }
       }
@@ -1453,10 +1606,18 @@
       // Event listeners
       connectBtn.addEventListener("click", () => {
         addLog("Initializing WhatsApp...");
+
+        // Hide any existing QR container first
+        qrContainer.classList.add("hidden");
+
         // Clear existing auth data to force QR code generation
         ipcRenderer.send("reset-auth-data");
-        ipcRenderer.send("init-whatsapp");
-        updateStatus("loading");
+
+        // Small delay to ensure auth reset completes
+        setTimeout(() => {
+          ipcRenderer.send("init-whatsapp");
+          updateStatus("loading");
+        }, 500);
       });
 
       logoutBtn.addEventListener("click", () => {
@@ -1515,20 +1676,64 @@
           '<span class="status status-waiting">Waiting for scan</span>';
 
         // Clear previous QR code
-        document.getElementById("qrcode").innerHTML = "";
+        const qrcodeElement = document.getElementById("qrcode");
+        qrcodeElement.innerHTML = "";
 
-        // Generate new QR code with larger size for better scanning
-        new QRCode(document.getElementById("qrcode"), {
-          text: qr,
-          width: 256,
-          height: 256,
-          colorDark: "#122c34",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H,
-        });
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          // Ensure QRCode library is loaded before generating
+          if (typeof QRCode !== "undefined") {
+            try {
+              // Generate new QR code with larger size for better scanning
+              new QRCode(qrcodeElement, {
+                text: qr,
+                width: 256,
+                height: 256,
+                colorDark: "#122c34",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H,
+              });
 
-        // Log to confirm QR code was generated in the UI
-        console.log("QR code generated in UI");
+              addLog(
+                "QR code generated successfully - please scan with WhatsApp"
+              );
+
+              // Check if QR was actually rendered after a short delay
+              setTimeout(() => {
+                if (qrcodeElement.children.length === 0) {
+                  addLog("QR code failed to render - showing alternative");
+                  qrcodeElement.innerHTML = `
+                    <div style="padding: 20px; text-align: center; background: #f0f0f0; border-radius: 8px;">
+                      <p style="margin-bottom: 10px; font-weight: bold; color: #ff6600;">QR Code Generation Issue</p>
+                      <p style="margin-bottom: 10px;">Please try refreshing the app</p>
+                      <button onclick="location.reload()" style="padding: 8px 16px; background: #128C7E; color: white; border: none; border-radius: 4px; cursor: pointer;">Reload App</button>
+                    </div>
+                  `;
+                }
+              }, 1000);
+            } catch (error) {
+              addLog(`Error generating QR code: ${error.message}`);
+              // Fallback: create a simple text representation
+              qrcodeElement.innerHTML = `
+                <div style="padding: 20px; text-align: center; background: #f0f0f0; border-radius: 8px;">
+                  <p style="margin-bottom: 10px; font-weight: bold;">QR Code Data:</p>
+                  <p style="word-break: break-all; font-family: monospace; font-size: 12px;">${qr}</p>
+                  <p style="margin-top: 10px; color: #666;">Please reload the app if QR doesn't display properly</p>
+                </div>
+              `;
+            }
+          } else {
+            addLog("QRCode library not loaded - attempting to reload");
+            // Fallback if QRCode library isn't loaded
+            qrcodeElement.innerHTML = `
+              <div style="padding: 20px; text-align: center; background: #f0f0f0; border-radius: 8px;">
+                <p style="color: #ff0000; font-weight: bold;">QR Library Loading Issue</p>
+                <p style="margin: 10px 0;">Please refresh the app</p>
+                <button onclick="location.reload()" style="padding: 8px 16px; background: #128C7E; color: white; border: none; border-radius: 4px; cursor: pointer;">Reload App</button>
+              </div>
+            `;
+          }
+        }, 100);
       });
 
       ipcRenderer.on("whatsapp-loading", (event, isLoading) => {
@@ -1555,10 +1760,12 @@
       });
 
       ipcRenderer.on("whatsapp-auth-failure", () => {
-        addLog("WhatsApp authentication failed");
+        addLog("WhatsApp authentication failed - please try connecting again");
         updateStatus("disconnected");
         // Hide chat loading indicator on auth failure
         chatsLoadingIndicator.classList.add("hidden");
+        // Clear QR container on auth failure
+        qrContainer.classList.add("hidden");
       });
 
       ipcRenderer.on("whatsapp-disconnected", () => {
@@ -1591,43 +1798,102 @@
       chatsLoadingIndicator.classList.remove("hidden");
       transferSectionContainer.classList.remove("visible"); // Ensure hidden on startup
 
-      // Power button toggle function
+      // Power button toggle function - updated for iframe communication
       function togglePower() {
-        const powerBtn = document.getElementById("powerBtn");
-        const status = document.getElementById("status");
-        const statusLed = document.getElementById("statusLed");
+        const powerButtonFrame = document.getElementById("power-button-frame");
         const powerButtonContainer = document.getElementById(
           "power-button-container"
         );
-        let isPowerOn = status.textContent === "ACTIVE";
+
+        // Get current state
+        let isPowerOn = isShutdownEnabled;
 
         if (isPowerOn) {
-          // Toggle to off state (no sound)
-          powerBtn.classList.remove("active");
-          status.classList.remove("active");
-          statusLed.classList.remove("active");
-          status.textContent = ""; // Remove STANDBY text
+          // Toggle to off state
           powerButtonContainer.classList.remove("active");
           isShutdownEnabled = false;
           addLog("Shutdown after transfer disabled");
+
+          // Send message to iframe to update state
+          if (powerButtonFrame && powerButtonFrame.contentWindow) {
+            powerButtonFrame.contentWindow.postMessage(
+              {
+                action: "setPowerState",
+                isPowerOn: false,
+              },
+              "*"
+            );
+          }
         } else {
           const confirmShutdown = confirm(
             "Enabling this will cause your system to shut down after the final transfer. Are you sure?"
           );
           if (!confirmShutdown) return;
 
-          // Toggle to on state (no sound)
-          powerBtn.classList.add("active");
-          status.classList.add("active");
-          statusLed.classList.add("active");
-          status.textContent = "ACTIVE";
+          // Toggle to on state
           powerButtonContainer.classList.add("active");
           isShutdownEnabled = true;
           addLog("Shutdown after transfer enabled");
+
+          // Send message to iframe to update state
+          if (powerButtonFrame && powerButtonFrame.contentWindow) {
+            powerButtonFrame.contentWindow.postMessage(
+              {
+                action: "setPowerState",
+                isPowerOn: true,
+              },
+              "*"
+            );
+          }
         }
 
         ipcRenderer.send("toggle-shutdown", isShutdownEnabled);
       }
+
+      // Listen for messages from power button iframe
+      window.addEventListener("message", function (event) {
+        const data = event.data;
+
+        if (data.type === "powerButtonLoaded") {
+          // Power button iframe has loaded, send initial theme
+          const powerButtonFrame =
+            document.getElementById("power-button-frame");
+          const isDarkMode =
+            document.documentElement.getAttribute("data-theme") === "dark";
+
+          if (powerButtonFrame && powerButtonFrame.contentWindow) {
+            powerButtonFrame.contentWindow.postMessage(
+              {
+                action: "updateTheme",
+                theme: isDarkMode ? "dark" : "light",
+              },
+              "*"
+            );
+
+            // Send initial power state
+            powerButtonFrame.contentWindow.postMessage(
+              {
+                action: "setPowerState",
+                isPowerOn: isShutdownEnabled,
+              },
+              "*"
+            );
+          }
+        } else if (data.type === "powerButtonStateChanged") {
+          // Handle power button state change from iframe
+          togglePower();
+        } else if (data.type === "powerButtonContainerActive") {
+          // Handle container glow effect
+          const powerButtonContainer = document.getElementById(
+            "power-button-container"
+          );
+          if (data.isActive) {
+            powerButtonContainer.classList.add("active");
+          } else {
+            powerButtonContainer.classList.remove("active");
+          }
+        }
+      });
     </script>
   </body>
 </html>
