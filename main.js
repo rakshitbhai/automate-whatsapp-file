@@ -15,8 +15,42 @@ const pino = require("pino");
 const mime = require("mime-types");
 const { writeFile, readFile, mkdir } = require("fs/promises");
 
+// Import utility modules
+const {
+  IPC_EVENTS,
+  TIMEOUTS,
+  WHATSAPP_CONFIG,
+  FILE_SIZE_LIMITS,
+  ALL_SUPPORTED_EXTENSIONS
+} = require("./utils/constants");
+const PlatformUtils = require("./utils/platform-utils");
+const FileUtils = require("./utils/file-utils");
+const ProgressTracker = require("./utils/progress-tracker");
+const CleanupManager = require("./utils/cleanup-manager");
+const Logger = require("./utils/logger");
+
 // Store will be null for now since makeInMemoryStore import is problematic
 let makeInMemoryStore = null;
+
+// Global variables
+let mainWindow;
+let sock;
+let store;
+let watcher;
+let caption = "";
+let shutdownAfterSend = false; // Always start with shutdown disabled
+let isProcessingFile = false;
+let activeTransfers = new Map(); // Track active transfers
+let maxRetries = WHATSAPP_CONFIG.DEFAULT_MAX_RETRIES;
+let preventAutoReconnect = false; // New flag to control automatic reconnections
+
+// Initialize cleanup manager and logger
+const cleanupManager = new CleanupManager();
+const logFilePath = path.join(app.getPath("userData"), "logs.txt");
+const logger = new Logger(logFilePath);
+
+// Configuration settings storage
+const configFilePath = path.join(app.getPath("userData"), "user_config.json");
 
 // Add cat purring sound functionality
 const createPurringSound = () => {
@@ -94,137 +128,53 @@ const createPurringSound = () => {
   };
 };
 
-// Global variables
-let mainWindow;
-let sock;
-let store;
-let watcher;
-let caption = "";
-let shutdownAfterSend = false; // Always start with shutdown disabled
-let isProcessingFile = false;
-let activeTransfers = new Map(); // Track active transfers
-let maxRetries = 5;
-let preventAutoReconnect = false; // New flag to control automatic reconnections
-
-// Play sound function that will be available to the renderer process
-function playSound(soundName) {
-  try {
-    const soundPath = path.join(__dirname, "assets", soundName);
-    logToFileAndUI(`Playing sound: ${soundPath}`);
-
-    // Use child_process to play sound with system command
-    // For macOS
-    if (process.platform === "darwin") {
-      const { execSync } = require("child_process");
-      execSync(`afplay "${soundPath}"`, { stdio: "ignore" });
-    }
-    // For Windows
-    else if (process.platform === "win32") {
-      const { execSync } = require("child_process");
-      execSync(
-        `powershell -c (New-Object Media.SoundPlayer "${soundPath}").PlaySync()`
-      );
-    }
-    // For Linux
-    else if (process.platform === "linux") {
-      const { execSync } = require("child_process");
-      execSync(`aplay "${soundPath}"`);
-    }
-
-    return true;
-  } catch (error) {
-    logToFileAndUI(`Error playing sound: ${error.message}`, true);
-    return false;
-  }
+// Play sound function using platform utilities
+// Play notification sound
+function playSound(soundFile = 'Cat Serenity_10.wav') {
+  PlatformUtils.playSound(soundFile);
 }
-
-// Configuration settings storage
-const configFilePath = path.join(app.getPath("userData"), "user_config.json");
 
 // Load user configuration from disk
 function loadUserConfig() {
-  try {
-    if (fs.existsSync(configFilePath)) {
-      const rawData = fs.readFileSync(configFilePath, "utf8");
-      const config = JSON.parse(rawData);
-      logToFileAndUI("User configuration loaded");
-
-      // We explicitly ignore the shutdown setting
-      // as we always want it to start as false
-      if (config.shutdown !== undefined) {
-        delete config.shutdown;
-      }
-
-      return config;
-    }
-  } catch (err) {
-    logToFileAndUI(`Error loading configuration: ${err.message}`, true);
-  }
-  // Return empty config if file doesn't exist or there's an error
-  return {
+  const config = FileUtils.readJsonFile(configFilePath, {
     folderPath: "",
     chatId: "",
     chatName: "",
     caption: "",
     // No shutdown property - we don't want to persist it
-  };
+  });
+
+  // We explicitly ignore the shutdown setting as we always want it to start as false
+  if (config.shutdown !== undefined) {
+    delete config.shutdown;
+  }
+
+  logger.info("User configuration loaded");
+  return config;
 }
 
 // Save user configuration to disk
 function saveUserConfig(config) {
   try {
-    fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2), "utf8");
-    logToFileAndUI("User configuration saved");
+    FileUtils.writeJsonFile(configFilePath, config);
+    logger.info("User configuration saved");
   } catch (err) {
-    logToFileAndUI(`Error saving configuration: ${err.message}`, true);
+    logger.error(`Error saving configuration: ${err.message}`);
   }
 }
 
 // Ensure the user data directory exists
 const userDataPath = path.join(app.getPath("userData"), "whatsapp-auth");
-if (!fs.existsSync(userDataPath)) {
-  fs.mkdirSync(userDataPath, { recursive: true });
-}
+FileUtils.ensureDirectoryExists(userDataPath);
 
-// Store logs in a file as well as sending to UI
-const logFilePath = path.join(app.getPath("userData"), "logs.txt");
+// Store logs in a file as well as sending to UI - replaced with Logger utility
 function logToFileAndUI(message, isError = false) {
-  const timestamp = new Date().toISOString();
-  const logMessage = `[${timestamp}] ${message}\n`;
-
-  // Always write to log file
-  try {
-    fs.appendFileSync(logFilePath, logMessage);
-  } catch (error) {
-    console.error("Failed to write to log file:", error);
-  }
-
-  // Only send to UI if mainWindow exists AND is not destroyed
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    try {
-      if (isError) {
-        mainWindow.webContents.send("error", message);
-      } else {
-        mainWindow.webContents.send("log", message);
-      }
-    } catch (error) {
-      console.error("Failed to send log to renderer:", error);
-    }
-  }
-
-  console.log(logMessage);
+  logger.log(message, isError);
 }
 
 function createWindow() {
-  // Determine the correct icon based on platform
-  let iconPath;
-  if (process.platform === "win32") {
-    iconPath = path.join(__dirname, "assets/icon.ico");
-  } else if (process.platform === "darwin") {
-    iconPath = path.join(__dirname, "assets/icon.icns");
-  } else {
-    iconPath = path.join(__dirname, "assets/icon.png");
-  }
+  // Use platform utilities for icon path
+  const iconPath = PlatformUtils.getIconPath(path.join(__dirname, "assets"));
 
   mainWindow = new BrowserWindow({
     width: 1000,
@@ -237,6 +187,9 @@ function createWindow() {
     },
     icon: iconPath,
   });
+
+  // Set logger main window reference
+  logger.setMainWindow(mainWindow);
 
   mainWindow.loadFile("index.html");
 
@@ -256,17 +209,17 @@ function createWindow() {
         logToFileAndUI(
           "Existing WhatsApp session found, attempting to restore..."
         );
-        mainWindow.webContents.send("whatsapp-loading", true);
+        mainWindow.webContents.send(IPC_EVENTS.WHATSAPP_LOADING, true);
         await initWhatsAppClient();
       } catch (err) {
         logToFileAndUI(`Failed to restore session: ${err.message}`, true);
-        mainWindow.webContents.send("whatsapp-disconnected");
+        mainWindow.webContents.send(IPC_EVENTS.WHATSAPP_DISCONNECTED);
       }
     } else {
       logToFileAndUI(
         'No existing session found. Click "Connect WhatsApp" to begin.'
       );
-      mainWindow.webContents.send("whatsapp-disconnected");
+      mainWindow.webContents.send(IPC_EVENTS.WHATSAPP_DISCONNECTED);
     }
   });
 }
@@ -284,67 +237,34 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", async function () {
-  // Clean up all active intervals and timers
-  if (global.progressIntervals) {
-    global.progressIntervals.forEach(clearInterval);
-    global.progressIntervals = [];
-  }
+  // Clean up using CleanupManager
+  CleanupManager.cleanupIntervals(global.progressIntervals, logToFileAndUI);
+  global.progressIntervals = [];
 
-  // Just end the socket connection WITHOUT logging out
-  // This preserves authentication for the next app launch
-  if (sock) {
-    try {
-      console.log("Ending WhatsApp connection (preserving auth)...");
-      // Check if socket is valid before ending it
-      if (sock.ev && typeof sock.end === "function" && !sock.destroyed) {
-        sock.end();
-      } else {
-        console.log("Socket already destroyed or invalid");
-      }
-      sock = null;
-    } catch (err) {
-      console.error(`Error closing WhatsApp connection: ${err.message}`);
-    }
-  }
+  // Clean up WhatsApp socket and store
+  const { sock: cleanSock, store: cleanStore } = CleanupManager.cleanupWhatsAppSocket(sock, store, logToFileAndUI);
+  sock = cleanSock;
+  store = cleanStore;
 
-  // Close file watcher
-  if (watcher) {
-    try {
-      watcher.close();
-      watcher = null;
-    } catch (err) {
-      console.error(`Error closing file watcher: ${err.message}`);
-    }
-  }
+  // Clean up file watcher
+  watcher = CleanupManager.cleanupFileWatcher(watcher, logToFileAndUI);
 
   // Clean up any other resources
-  store = null;
   mainWindow = null;
 
-  // Run garbage collection if available
-  if (global.gc) {
-    global.gc();
-  }
+  // Run garbage collection
+  CleanupManager.runGarbageCollection(logToFileAndUI);
 
   app.quit();
 });
 
-// Force shutdown computer function (with elevated privileges)
+// Force shutdown computer function using platform utilities
 function forceShutdown() {
   try {
-    if (process.platform === "win32") {
-      logToFileAndUI("Executing Windows shutdown command...");
-      execSync("shutdown /s /f /t 10");
-    } else if (process.platform === "darwin") {
-      // macOS
-      logToFileAndUI("Executing macOS shutdown command...");
-      execSync('osascript -e "tell app \\"System Events\\" to shut down"');
-    } else if (process.platform === "linux") {
-      logToFileAndUI("Executing Linux shutdown command...");
-      execSync("systemctl poweroff");
-    } else {
-      throw new Error("Unsupported platform for shutdown");
-    }
+    const platformInfo = PlatformUtils.getPlatformInfo();
+    logToFileAndUI(`Executing ${platformInfo.platform} shutdown command...`);
+
+    PlatformUtils.executeShutdown();
     logToFileAndUI("Shutdown command executed successfully");
     return true;
   } catch (error) {
@@ -360,15 +280,14 @@ function getSystemResources() {
   const freeMemGB = Math.floor(os.freemem() / (1024 * 1024 * 1024));
   const cpuCount = os.cpus().length;
 
-  logToFileAndUI(
-    `System info: ${totalMemGB}GB RAM (${freeMemGB}GB free), ${cpuCount} CPUs`
-  );
-
-  return {
+  const systemInfo = {
     totalMemGB,
     freeMemGB,
     cpuCount,
   };
+
+  logger.logSystemInfo(systemInfo);
+  return systemInfo;
 }
 
 // Update the forceContactSync function to be more gentle with WhatsApp API
@@ -605,14 +524,13 @@ ipcMain.on("update-caption", async (event, value) => {
   saveUserConfig(config);
 });
 
-ipcMain.on("toggle-shutdown", (event, value) => {
+ipcMain.on(IPC_EVENTS.TOGGLE_SHUTDOWN, (event, value) => {
   shutdownAfterSend = value;
   logToFileAndUI(`Shutdown after send set to: ${shutdownAfterSend}`);
 
-  // No longer saving to configuration
-  // We only update the UI to reflect the current state
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send("shutdown-state-changed", shutdownAfterSend);
+  // Send the updated state to the renderer process
+  if (mainWindow && mainWindow.webContents) {
+    mainWindow.webContents.send(IPC_EVENTS.SHUTDOWN_STATE_CHANGED, shutdownAfterSend);
   }
 });
 
@@ -645,25 +563,20 @@ async function processAndSendFile(filePath, chatId, attemptCount = 0) {
   }
 
   isProcessingFile = true;
-  logToFileAndUI(`Processing file: ${filePath}`);
+  logger.info(`Processing file: ${filePath}`);
 
   try {
-    // Check file size and accessibility
-    const fileStats = fs.statSync(filePath);
-    const fileSizeMB = fileStats.size / (1024 * 1024);
-    logToFileAndUI(
-      `File size: ${fileStats.size} bytes (${fileSizeMB.toFixed(2)}MB)`
-    );
+    // Validate file using FileUtils
+    const fileValidation = FileUtils.validateFile(filePath);
+    logger.logFileProcessing(filePath, fileValidation);
 
-    if (fileStats.size === 0) {
+    if (fileValidation.isEmpty) {
       logToFileAndUI("File appears empty, skipping...");
       isProcessingFile = false;
       return;
     }
 
-    // File size warning
-    if (fileSizeMB > 1000) {
-      // 1GB
+    if (fileValidation.exceedsWarningThreshold) {
       logToFileAndUI(
         "Warning: File is extremely large (>1GB). This may take some time...",
         true
@@ -671,8 +584,7 @@ async function processAndSendFile(filePath, chatId, attemptCount = 0) {
       logToFileAndUI("Optimizing memory for large file transfer...");
     }
 
-    if (fileSizeMB > 2000) {
-      // 2GB
+    if (fileValidation.exceedsMaxSize) {
       logToFileAndUI(
         "Error: File exceeds 2GB limit. WhatsApp has a maximum file size limit of 2GB",
         true
@@ -687,13 +599,13 @@ async function processAndSendFile(filePath, chatId, attemptCount = 0) {
       chatId,
       attemptCount,
       startTime: Date.now(),
-      fileSize: fileStats.size,
+      fileSize: fileValidation.size,
       transferId,
     });
 
-    // Determine the MIME type based on the file extension
-    const ext = path.extname(filePath).toLowerCase();
-    const mimeType = mime.lookup(ext) || "application/octet-stream";
+    // Get MIME type using FileUtils
+    const mimeType = FileUtils.getMimeType(filePath);
+    const fileName = path.basename(filePath);
 
     logToFileAndUI(`Preparing to send file with mimetype: ${mimeType}`);
     logToFileAndUI(
@@ -701,167 +613,52 @@ async function processAndSendFile(filePath, chatId, attemptCount = 0) {
     );
 
     // Force garbage collection before reading the file
-    if (global.gc) {
-      global.gc();
-      logToFileAndUI("Performed garbage collection before file read");
-    }
+    CleanupManager.runGarbageCollection(logToFileAndUI);
 
     // Proper JID formatting
     const jid = ensureProperJid(chatId);
 
-    // Progress tracking
-    const sendStartTime = Date.now();
-    let lastProgressUpdate = 0;
-    let bytesProcessed = 0;
+    // Initialize progress tracker
+    const progressTracker = new ProgressTracker(
+      fileName,
+      fileValidation.size,
+      ensureProperJid(chatId).split("@")[0],
+      mimeType,
+      transferId
+    );
 
-    // For very large files, we'll break it into smaller chunks internally
-    // This works better with Baileys' internal mechanisms
-    const fileName = path.basename(filePath);
-
-    // IMPORTANT: Send initial progress update immediately to show the animation right away
+    // Send initial progress update
     if (mainWindow) {
-      mainWindow.webContents.send("upload-progress", {
-        file: fileName,
-        progress: 1, // Start at 1%
-        elapsed: 0,
-        speed: "0.00",
-        eta: "Calculating...",
-        destination: ensureProperJid(chatId).split("@")[0],
-        fileType: mimeType,
-        fileSize: `${(fileStats.size / (1024 * 1024)).toFixed(2)} MB`,
-        transferId,
+      progressTracker.sendInitialUpdate((progressData) => {
+        mainWindow.webContents.send(IPC_EVENTS.UPLOAD_PROGRESS, progressData);
       });
-
-      // Force an update of the UI
-      logToFileAndUI(
-        "File transfer started - engine animation should be visible"
-      );
+      logToFileAndUI("File transfer started - engine animation should be visible");
     }
 
-    // Register a progress callback
-    const onProgress = (progress) => {
-      // Only update at most once per second to avoid UI spam
-      const now = Date.now();
-      if (now - lastProgressUpdate >= 1000) {
-        lastProgressUpdate = now;
-        const elapsedSeconds = Math.floor((now - sendStartTime) / 1000);
-        const percent = progress.total
-          ? Math.round((progress.uploaded / progress.total) * 100)
-          : "unknown";
-
-        bytesProcessed = progress.uploaded;
-
-        // Calculate speed in MB/s
-        const speed =
-          elapsedSeconds > 0
-            ? (bytesProcessed / (1024 * 1024) / elapsedSeconds).toFixed(2)
-            : "0.00";
-
-        // Calculate ETA
-        let eta = "Unknown";
-        if (progress.total && elapsedSeconds > 0 && percent < 100) {
-          const remainingPercent = 100 - percent;
-          const timePerPercent = elapsedSeconds / percent;
-          const remainingSeconds = Math.round(
-            remainingPercent * timePerPercent
-          );
-          eta = `~${remainingSeconds}s remaining`;
-        } else if (percent >= 100) {
-          eta = "Completing...";
-        }
-
-        logToFileAndUI(
-          `Upload progress: ${percent}% (${elapsedSeconds}s elapsed, ${speed} MB/s)`
-        );
-
-        // Send enhanced progress to UI
-        if (mainWindow) {
-          mainWindow.webContents.send("upload-progress", {
-            file: fileName,
-            progress: percent,
-            elapsed: elapsedSeconds,
-            speed: `${speed}`,
-            eta: eta,
-            destination: ensureProperJid(chatId).split("@")[0],
-            fileType: mimeType,
-            fileSize: `${(fileStats.size / (1024 * 1024)).toFixed(2)} MB`,
-            transferId,
-          });
-        }
-      }
-    };
-
-    // For extremely large files, optimize memory usage with proper upload tracking
-    let result;
-    let progressInterval; // Define progress interval variable
-
-    // Start simulated progress updates regardless of file size
-    let simulatedProgress = 0;
-    const startTime = Date.now();
-    const estimatedTimeSeconds = Math.max(
-      20,
-      Math.min(300, Math.round(fileSizeMB * 0.5))
-    ); // Estimate based on file size
-    const updateFrequency = 800; // Update every 800ms
-
-    // Calculate how much to increment progress each time
-    const progressIncrement =
-      90 / ((estimatedTimeSeconds * 1000) / updateFrequency);
-
-    progressInterval = setInterval(() => {
-      const elapsedMs = Date.now() - startTime;
-      const elapsedSeconds = Math.floor(elapsedMs / 1000);
-
-      // Calculate simulated progress - faster at start, slower towards end
-      if (simulatedProgress < 10) {
-        // Initial phase - move quickly to 10%
-        simulatedProgress += progressIncrement * 2;
-      } else if (simulatedProgress < 85) {
-        // Main transfer phase - steady progress
-        simulatedProgress += progressIncrement;
-      } else if (simulatedProgress < 90) {
-        // Slowing down phase
-        simulatedProgress += progressIncrement * 0.5;
-      }
-
-      // Cap at 90% - the actual completion will move it to 100%
-      simulatedProgress = Math.min(90, simulatedProgress);
-
-      // Calculated estimated speed
-      const processedEstimate = (simulatedProgress / 100) * fileStats.size;
-      const speedMBps =
-        elapsedSeconds > 0
-          ? (processedEstimate / (1024 * 1024) / elapsedSeconds).toFixed(2)
-          : 0;
-
-      // Send the progress update
+    // Start simulated progress for better UX
+    progressTracker.startSimulatedProgress(fileValidation.sizeMB, (progressData) => {
       if (mainWindow) {
-        mainWindow.webContents.send("upload-progress", {
-          file: fileName,
-          progress: Math.round(simulatedProgress),
-          elapsed: elapsedSeconds,
-          speed: speedMBps,
-          eta: `~${Math.round(
-            estimatedTimeSeconds - elapsedSeconds
-          )}s remaining`,
-          destination: ensureProperJid(chatId).split("@")[0],
-          fileType: mimeType,
-          fileSize: `${(fileStats.size / (1024 * 1024)).toFixed(2)} MB`,
-          transferId,
-        });
+        mainWindow.webContents.send(IPC_EVENTS.UPLOAD_PROGRESS, progressData);
       }
-    }, updateFrequency);
+    });
+
+    const sendStartTime = Date.now();
+    let result;
 
     try {
-      if (fileSizeMB > 500) {
+      if (fileValidation.isLarge) {
         logToFileAndUI("Using optimized approach for large file upload");
 
-        // Use message options with additional settings for large files
         const options = {
-          uploadProgress: onProgress,
+          uploadProgress: (progress) => {
+            progressTracker.processRealProgress(progress, (progressData) => {
+              if (mainWindow) {
+                mainWindow.webContents.send(IPC_EVENTS.UPLOAD_PROGRESS, progressData);
+              }
+            });
+          },
         };
 
-        // With Baileys, we can send as a document directly from the file path with progress tracking
         result = await sock.sendMessage(
           jid,
           {
@@ -885,289 +682,224 @@ async function processAndSendFile(filePath, chatId, attemptCount = 0) {
         });
       }
 
-      // Clear the progress interval once sending is complete
-      clearInterval(progressInterval);
+      // Clean up progress tracker
+      progressTracker.cleanup();
 
-      // Send final 100% progress update
+      // Send final completion update
+      const totalTime = Math.floor((Date.now() - sendStartTime) / 1000);
       if (mainWindow) {
-        mainWindow.webContents.send("upload-progress", {
-          file: fileName,
-          progress: 100,
-          elapsed: Math.floor((Date.now() - startTime) / 1000),
-          speed: (
-            fileSizeMB / (Math.floor((Date.now() - startTime) / 1000) || 1)
-          ).toFixed(2),
-          eta: "Complete!",
-          destination: ensureProperJid(chatId).split("@")[0],
-          fileType: mimeType,
-          fileSize: `${(fileStats.size / (1024 * 1024)).toFixed(2)} MB`,
-          transferId,
-        });
+        progressTracker.sendCompletionUpdate((progressData) => {
+          mainWindow.webContents.send(IPC_EVENTS.UPLOAD_PROGRESS, progressData);
+        }, totalTime);
       }
 
-      const totalTime = Math.floor((Date.now() - sendStartTime) / 1000);
-      const speedMBps = fileSizeMB / (totalTime || 1);
+      const speedMBps = fileValidation.sizeMB / (totalTime || 1);
+      logger.logTransferCompletion(result.key.id, totalTime, speedMBps);
 
-      logToFileAndUI(
-        `✅ Document sent successfully! Message ID: ${result.key.id}`
-      );
-      logToFileAndUI(
-        `Transfer completed in ${totalTime} seconds (average speed: ${speedMBps.toFixed(
-          2
-        )} MB/s)`
-      );
       // Shutdown PC if requested
       if (shutdownAfterSend) {
         logToFileAndUI("Preparing to shut down system...");
-
-        // Add a small delay before shutdown to ensure logs are visible
         setTimeout(() => {
           forceShutdown();
-        }, 5000);
+        }, TIMEOUTS.SHUTDOWN_DELAY_MS);
       }
     } catch (error) {
-      // Clear the interval if there's an error
-      clearInterval(progressInterval);
-      throw error; // Re-throw to be caught by the outer catch block
+      progressTracker.cleanup();
+      throw error;
     }
 
-    // Now verify the message was actually sent by asking the server for confirmation
+    // Handle message verification and confirmation (keeping existing logic)
+    await handleMessageVerification(result, fileName, transferId, sendStartTime, fileValidation.sizeMB);
+
+    // Remove from active transfers
+    activeTransfers.delete(filePath);
+
+    // Memory cleanup
+    CleanupManager.runGarbageCollection(logToFileAndUI);
+  } catch (error) {
+    logToFileAndUI(`Error sending document: ${error.message}`, true);
+    console.error("Error sending document:", error);
+
+    await handleTransferError(error, filePath, chatId, attemptCount);
+  } finally {
+    isProcessingFile = false;
+    CleanupManager.runGarbageCollection(() => { });
+  }
+}
+
+// Handle message verification and status updates
+async function handleMessageVerification(result, fileName, transferId, sendStartTime, fileSizeMB) {
+  try {
+    // Wait a moment to ensure server has processed the message
+    await new Promise((resolve) => setTimeout(resolve, TIMEOUTS.MESSAGE_VERIFICATION_DELAY_MS));
+
+    // Calculate the final statistics for the transfer
+    const totalTime = Math.floor((Date.now() - sendStartTime) / 1000);
+    const speedMBps = fileSizeMB / (totalTime || 1);
+    const finalSpeed = speedMBps.toFixed(2);
+
+    // Try to get message status from store
+    let status = 2; // Default to delivered to server
     try {
-      // Wait a moment to ensure server has processed the message
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      // Calculate the final statistics for the transfer
-      const totalTime = Math.floor((Date.now() - sendStartTime) / 1000);
-      const speedMBps = fileSizeMB / (totalTime || 1);
-      const finalSpeed = speedMBps.toFixed(2);
-
-      // In newer Baileys versions, we need to use a different approach
-      // The messageInfo function doesn't exist in current versions
-      try {
-        // Method 1: Check message status from store
-        if (store && store.messages) {
-          const chat = store.messages[jid];
-          if (chat) {
-            const msg = chat.get(result.key.id);
-            if (msg) {
-              const status = msg.status || 2;
-              logToFileAndUI(
-                `✓✓ Message delivery status from store: ${status}`
-              );
-              mainWindow.webContents.send("file-sent-confirmed", {
-                file: fileName,
-                messageId: result.key.id,
-                status: status,
-                transferId,
-                elapsed: totalTime,
-                speed: finalSpeed,
-              });
-              return; // Successfully found status
-            }
+      if (store && store.messages) {
+        const jid = result.key.remoteJid;
+        const chat = store.messages[jid];
+        if (chat) {
+          const msg = chat.get(result.key.id);
+          if (msg) {
+            status = msg.status || 2;
+            logToFileAndUI(`✓✓ Message delivery status from store: ${status}`);
           }
         }
-
-        // Method 2: Use read-receipts event - this is just to set up future status updates
-        // We'll assume successful delivery since the message was sent without error
-        logToFileAndUI(`✓ Message assumed delivered (ID: ${result.key.id})`);
-        mainWindow.webContents.send("file-sent-confirmed", {
-          file: fileName,
-          messageId: result.key.id,
-          status: 2, // Assume delivered to server
-          transferId,
-          elapsed: totalTime,
-          speed: finalSpeed,
-        });
-
-        // Set up listener for future status updates for this message
-        const statusListener = sock.ev.on("messages.update", (updates) => {
-          for (const update of updates) {
-            if (update.key.id === result.key.id) {
-              if (update.status) {
-                logToFileAndUI(`Message status updated: ${update.status}`);
-              }
-            }
-          }
-        });
-
-        // Remove listener after some time to avoid memory leaks
-        setTimeout(() => {
-          sock.ev.off("messages.update", statusListener);
-        }, 60000);
-      } catch (innerError) {
-        // Fall back to basic confirmation - the message was sent successfully
-        logToFileAndUI(
-          `Message sent successfully, cannot verify delivery status: ${innerError.message}`
-        );
-        mainWindow.webContents.send("file-sent-confirmed", {
-          file: fileName,
-          messageId: result.key.id,
-          status: 2, // Assume delivered to server
-          transferId,
-          elapsed: totalTime,
-          speed: finalSpeed,
-        });
       }
-    } catch (verifyErr) {
-      logToFileAndUI(
-        `Sent file but couldn't verify delivery status: ${verifyErr.message}`
-      );
-      // Still send confirmation since the file was sent
+    } catch (innerError) {
+      logToFileAndUI(`Message sent successfully, cannot verify delivery status: ${innerError.message}`);
+    }
 
-      // Calculate the final statistics even in error case
-      const totalTime = Math.floor((Date.now() - sendStartTime) / 1000);
-      const speedMBps = fileSizeMB / (totalTime || 1);
-      const finalSpeed = speedMBps.toFixed(2);
-
-      mainWindow.webContents.send("file-sent-confirmed", {
+    // Send confirmation to UI
+    if (mainWindow) {
+      mainWindow.webContents.send(IPC_EVENTS.FILE_SENT_CONFIRMED, {
         file: fileName,
         messageId: result.key.id,
-        status: 2, // Assume delivered to server
+        status: status,
         transferId,
         elapsed: totalTime,
         speed: finalSpeed,
       });
     }
 
-    // Remove from active transfers
-    activeTransfers.delete(filePath);
-
-    // Memory cleanup
-    if (global.gc) {
-      global.gc();
-      logToFileAndUI("Performed garbage collection after successful send");
-    }
-  } catch (error) {
-    logToFileAndUI(`Error sending document: ${error.message}`, true);
-    console.error("Error sending document:", error);
-
-    // Check if this is a connection error
-    if (
-      error.message.includes("Connection closed") ||
-      error.message.includes("Stream ended") ||
-      error.message.includes("not connected") ||
-      error.message.includes("timed out") ||
-      error.message.includes("socket hang up")
-    ) {
-      logToFileAndUI(
-        "WhatsApp connection was lost. Attempting to reconnect...",
-        true
-      );
-
-      // Try to reconnect and retry the transfer if within retry limit
-      if (attemptCount < maxRetries) {
-        const nextAttempt = attemptCount + 1;
-        logToFileAndUI(
-          `This was attempt ${
-            attemptCount + 1
-          }. Will retry after reconnection (${nextAttempt}/${maxRetries})`
-        );
-
-        activeTransfers.set(filePath, {
-          chatId,
-          attemptCount: nextAttempt,
-          fileSize: fs.statSync(filePath).size,
-          startTime: Date.now(), // Reset start time for the retry
-        });
-
-        try {
-          if (sock) {
-            sock.end();
-          }
-
-          setTimeout(() => {
-            initWhatsAppClient();
-            logToFileAndUI(
-              "WhatsApp reinitializing, transfer will resume automatically when connected"
-            );
-          }, 15000);
-        } catch (err) {
-          logToFileAndUI(`Error during reconnection: ${err.message}`, true);
+    // Set up listener for future status updates
+    const statusListener = sock.ev.on("messages.update", (updates) => {
+      for (const update of updates) {
+        if (update.key.id === result.key.id && update.status) {
+          logToFileAndUI(`Message status updated: ${update.status}`);
         }
-      } else {
-        logToFileAndUI(
-          `Maximum retry attempts (${maxRetries}) reached for file: ${path.basename(
-            filePath
-          )}`,
-          true
-        );
-        activeTransfers.delete(filePath);
-        mainWindow.webContents.send("file-send-failed", {
-          file: path.basename(filePath),
-          error: error.message,
-        });
       }
-    } else if (error.message.includes("Too large")) {
-      // Specific error for file size limit
-      logToFileAndUI(
-        `Error: File is too large for WhatsApp. Maximum size is 2GB.`,
-        true
-      );
-      activeTransfers.delete(filePath);
-      mainWindow.webContents.send("file-send-failed", {
-        file: path.basename(filePath),
-        error: "File exceeds WhatsApp size limit of 2GB",
+    });
+
+    // Remove listener after timeout to avoid memory leaks
+    setTimeout(() => {
+      if (sock && sock.ev) {
+        sock.ev.off("messages.update", statusListener);
+      }
+    }, TIMEOUTS.MESSAGE_STATUS_LISTENER_CLEANUP_MS);
+
+  } catch (verifyErr) {
+    logToFileAndUI(`Sent file but couldn't verify delivery status: ${verifyErr.message}`);
+
+    // Still send confirmation since the file was sent
+    const totalTime = Math.floor((Date.now() - sendStartTime) / 1000);
+    const speedMBps = fileSizeMB / (totalTime || 1);
+    const finalSpeed = speedMBps.toFixed(2);
+
+    if (mainWindow) {
+      mainWindow.webContents.send(IPC_EVENTS.FILE_SENT_CONFIRMED, {
+        file: fileName,
+        messageId: result.key.id,
+        status: 2,
+        transferId: result.transferId || Date.now().toString(),
+        elapsed: totalTime,
+        speed: finalSpeed,
       });
-    } else {
-      // Other errors
-      logToFileAndUI(`Error: ${error.message}`, true);
-
-      // For general errors, retry if within limit
-      if (attemptCount < maxRetries) {
-        const nextAttempt = attemptCount + 1;
-        logToFileAndUI(
-          `Will retry (${nextAttempt}/${maxRetries}) in 10 seconds...`
-        );
-
-        setTimeout(() => {
-          logToFileAndUI(`Retrying file: ${path.basename(filePath)}`);
-          processAndSendFile(filePath, chatId, nextAttempt);
-        }, 10000);
-      } else {
-        logToFileAndUI(
-          `Maximum retry attempts (${maxRetries}) reached for file: ${path.basename(
-            filePath
-          )}`,
-          true
-        );
-        activeTransfers.delete(filePath);
-        mainWindow.webContents.send("file-send-failed", {
-          file: path.basename(filePath),
-          error: error.message,
-        });
-      }
-    }
-  } finally {
-    isProcessingFile = false;
-
-    // Final memory cleanup
-    if (global.gc) {
-      global.gc();
     }
   }
 }
 
-// Improved file watching with better error handling
-ipcMain.on("start-watching", (event, { folderPath, chatId }) => {
+// Handle transfer errors with retry logic
+async function handleTransferError(error, filePath, chatId, attemptCount) {
+  const fileName = path.basename(filePath);
+
+  // Check if this is a connection error
+  const isConnectionError = [
+    "Connection closed",
+    "Stream ended",
+    "not connected",
+    "timed out",
+    "socket hang up"
+  ].some(errorType => error.message.includes(errorType));
+
+  if (isConnectionError) {
+    logToFileAndUI("WhatsApp connection was lost. Attempting to reconnect...", true);
+
+    if (attemptCount < maxRetries) {
+      const nextAttempt = attemptCount + 1;
+      logToFileAndUI(
+        `This was attempt ${attemptCount + 1}. Will retry after reconnection (${nextAttempt}/${maxRetries})`
+      );
+
+      activeTransfers.set(filePath, {
+        chatId,
+        attemptCount: nextAttempt,
+        fileSize: fs.statSync(filePath).size,
+        startTime: Date.now(),
+      });
+
+      try {
+        if (sock) {
+          sock.end();
+        }
+
+        setTimeout(() => {
+          initWhatsAppClient();
+          logToFileAndUI("WhatsApp reinitializing, transfer will resume automatically when connected");
+        }, 15000);
+      } catch (err) {
+        logToFileAndUI(`Error during reconnection: ${err.message}`, true);
+      }
+    } else {
+      logToFileAndUI(`Maximum retry attempts (${maxRetries}) reached for file: ${fileName}`, true);
+      activeTransfers.delete(filePath);
+
+      if (mainWindow) {
+        mainWindow.webContents.send(IPC_EVENTS.FILE_SEND_FAILED, {
+          file: fileName,
+          error: error.message,
+        });
+      }
+    }
+  } else if (error.message.includes("Too large")) {
+    logToFileAndUI(`Error: File is too large for WhatsApp. Maximum size is 2GB.`, true);
+    activeTransfers.delete(filePath);
+
+    if (mainWindow) {
+      mainWindow.webContents.send(IPC_EVENTS.FILE_SEND_FAILED, {
+        file: fileName,
+        error: "File exceeds WhatsApp size limit of 2GB",
+      });
+    }
+  } else {
+    // Other errors - retry if within limit
+    if (attemptCount < maxRetries) {
+      const nextAttempt = attemptCount + 1;
+      logToFileAndUI(`Will retry (${nextAttempt}/${maxRetries}) in 10 seconds...`);
+
+      setTimeout(() => {
+        logToFileAndUI(`Retrying file: ${fileName}`);
+        processAndSendFile(filePath, chatId, nextAttempt);
+      }, TIMEOUTS.FILE_RETRY_MS);
+    } else {
+      logToFileAndUI(`Maximum retry attempts (${maxRetries}) reached for file: ${fileName}`, true);
+      activeTransfers.delete(filePath);
+
+      if (mainWindow) {
+        mainWindow.webContents.send(IPC_EVENTS.FILE_SEND_FAILED, {
+          file: fileName,
+          error: error.message,
+        });
+      }
+    }
+  }
+}
+
+// Improved file watching with better error handling using constants
+ipcMain.on(IPC_EVENTS.START_WATCHING, (event, { folderPath, chatId }) => {
   if (watcher) {
     watcher.close();
   }
 
   logToFileAndUI(`Started watching folder: ${folderPath}`);
 
-  watcher = chokidar.watch(folderPath, {
-    persistent: true,
-    ignoreInitial: true,
-    awaitWriteFinish: {
-      stabilityThreshold: 15000, // Wait 15 seconds of stability before considering file complete
-      pollInterval: 2000, // Check every 2 seconds
-    },
-    usePolling: true, // More reliable for network drives
-    interval: 5000, // 5 seconds polling interval for more stability
-    binaryInterval: 10000, // Check binary files less frequently to reduce CPU usage
-    depth: 0, // Only watch files in the immediate directory, not subdirectories
-    ignorePermissionErrors: true,
-  });
+  watcher = chokidar.watch(folderPath, WHATSAPP_CONFIG.CHOKIDAR_CONFIG);
 
   watcher.on("add", (filePath) => {
     logToFileAndUI(`New file detected: ${filePath}`);
@@ -1176,47 +908,10 @@ ipcMain.on("start-watching", (event, { folderPath, chatId }) => {
     const fileExt = path.extname(filePath).toLowerCase();
     logToFileAndUI(`File extension: ${fileExt}`);
 
-    // Check if the file is a supported type (expanded to include more formats)
-    const supportedExtensions = [
-      // Video formats
-      ".mp4",
-      ".mov",
-      ".avi",
-      ".mkv",
-      ".wmv",
-      ".flv",
-      ".webm",
-      ".m4v",
-      // Image formats
-      ".jpg",
-      ".jpeg",
-      ".png",
-      ".gif",
-      ".bmp",
-      ".webp",
-      // Document formats
-      ".pdf",
-      ".doc",
-      ".docx",
-      ".txt",
-      ".xls",
-      ".xlsx",
-      ".ppt",
-      ".pptx",
-      // Audio formats
-      ".mp3",
-      ".wav",
-      ".flac",
-      ".aac",
-      ".ogg",
-      ".m4a",
-    ];
-
-    if (supportedExtensions.includes(fileExt) || fileExt === "") {
+    // Check if file is supported using FileUtils
+    if (FileUtils.isFileSupported(filePath)) {
       logToFileAndUI(
-        `File ${path.basename(
-          filePath
-        )} is a supported file type, processing...`
+        `File ${path.basename(filePath)} is a supported file type, processing...`
       );
 
       // Extended wait to ensure file is fully written and not locked
@@ -1225,59 +920,42 @@ ipcMain.on("start-watching", (event, { folderPath, chatId }) => {
           `Starting file accessibility check for: ${path.basename(filePath)}`
         );
 
-        try {
-          // Test if file is accessible and not locked
-          const fd = fs.openSync(filePath, "r");
-          fs.closeSync(fd);
-
+        if (FileUtils.isFileAccessible(filePath)) {
           logToFileAndUI(
-            `File ${path.basename(
-              filePath
-            )} is accessible, starting send process...`
+            `File ${path.basename(filePath)} is accessible, starting send process...`
           );
-
-          // Start processing the file
           processAndSendFile(filePath, chatId);
-        } catch (err) {
+        } else {
           logToFileAndUI(
-            `File not accessible yet: ${err.message}. Waiting longer...`,
+            `File not accessible yet. Waiting longer...`,
             true
           );
 
           // Try again after additional delay
           setTimeout(() => {
             logToFileAndUI(
-              `Retrying file accessibility check for: ${path.basename(
-                filePath
-              )}`
+              `Retrying file accessibility check for: ${path.basename(filePath)}`
             );
-            try {
-              const fd = fs.openSync(filePath, "r");
-              fs.closeSync(fd);
+
+            if (FileUtils.isFileAccessible(filePath)) {
               logToFileAndUI(
-                `File ${path.basename(
-                  filePath
-                )} is now accessible, starting send process...`
+                `File ${path.basename(filePath)} is now accessible, starting send process...`
               );
               processAndSendFile(filePath, chatId);
-            } catch (retryErr) {
+            } else {
               logToFileAndUI(
-                `File still not accessible after retry: ${retryErr.message}`,
+                `File still not accessible after retry: ${path.basename(filePath)}`,
                 true
               );
             }
-          }, 10000);
+          }, TIMEOUTS.FILE_ACCESSIBILITY_CHECK_MS);
         }
-      }, 10000);
+      }, TIMEOUTS.FILE_ACCESSIBILITY_CHECK_MS);
     } else {
       logToFileAndUI(
-        `File ${path.basename(
-          filePath
-        )} with extension ${fileExt} is not a supported format. Skipping.`
+        `File ${path.basename(filePath)} with extension ${fileExt} is not a supported format. Skipping.`
       );
-      logToFileAndUI(
-        `Supported formats: videos, images, documents, audio files`
-      );
+      logToFileAndUI(`Supported formats: videos, images, documents, audio files`);
     }
   });
 
@@ -1287,15 +965,15 @@ ipcMain.on("start-watching", (event, { folderPath, chatId }) => {
 });
 
 // Stop watching folder
-ipcMain.on("stop-watching", () => {
+ipcMain.on(IPC_EVENTS.STOP_WATCHING, () => {
   if (watcher) {
     watcher.close();
     logToFileAndUI("Stopped watching folder");
   }
 });
 
-// Reset auth data to force QR code generation
-ipcMain.on("reset-auth-data", () => {
+// Reset auth data to force QR code generation using FileUtils
+ipcMain.on(IPC_EVENTS.RESET_AUTH_DATA, () => {
   try {
     logToFileAndUI(
       "Resetting authentication data to force new QR code generation..."
@@ -1304,26 +982,19 @@ ipcMain.on("reset-auth-data", () => {
     // Get the correct auth directory path that we're using
     const authDirectory = path.join(app.getPath("userData"), "baileys-auth");
 
-    // Check if the directory exists before attempting to delete files
-    if (fs.existsSync(authDirectory)) {
-      // Delete the entire auth directory and recreate it
-      fs.rmSync(authDirectory, { recursive: true });
-      fs.mkdirSync(authDirectory, { recursive: true });
-      logToFileAndUI("Auth credentials directory reset");
-    }
+    // Clean up auth data using FileUtils
+    FileUtils.removeDirectory(authDirectory);
+    FileUtils.ensureDirectoryExists(authDirectory);
+    logToFileAndUI("Auth credentials directory reset");
 
     // Reset reconnect attempts counter
     const reconnectAttemptFile = path.join(userDataPath, "reconnect_attempts");
-    if (fs.existsSync(reconnectAttemptFile)) {
-      fs.writeFileSync(reconnectAttemptFile, "0");
-    }
+    FileUtils.removeFile(reconnectAttemptFile);
 
     // Also clear store file to prevent any cached data issues
     const storeFile = path.join(app.getPath("userData"), "baileys_store.json");
-    if (fs.existsSync(storeFile)) {
-      fs.unlinkSync(storeFile);
-      logToFileAndUI("Store data cleared");
-    }
+    FileUtils.removeFile(storeFile);
+    logToFileAndUI("Store data cleared");
 
     preventAutoReconnect = false; // Reset connection prevention flag
     logToFileAndUI("Authentication data reset complete, ready for new QR code");
@@ -1332,8 +1003,8 @@ ipcMain.on("reset-auth-data", () => {
   }
 });
 
-// Log out of WhatsApp
-ipcMain.on("logout-whatsapp", async () => {
+// Log out of WhatsApp using CleanupManager and FileUtils
+ipcMain.on(IPC_EVENTS.LOGOUT_WHATSAPP, async () => {
   try {
     logToFileAndUI("Logging out of WhatsApp...");
 
@@ -1346,16 +1017,10 @@ ipcMain.on("logout-whatsapp", async () => {
         await sock.logout();
         logToFileAndUI("Logout command sent to WhatsApp server");
 
-        // Properly end the socket
-        sock.ev.removeAllListeners(); // Remove all event listeners
-        await sock.end();
-        sock = null; // Clear the socket reference
-
-        // Clean up store data
-        if (store) {
-          store = null;
-          logToFileAndUI("Store data cleared");
-        }
+        // Properly end the socket using CleanupManager
+        const { sock: cleanSock, store: cleanStore } = CleanupManager.cleanupWhatsAppSocket(sock, store, logToFileAndUI);
+        sock = cleanSock;
+        store = cleanStore;
 
         logToFileAndUI("Socket connection terminated");
       } catch (err) {
@@ -1363,55 +1028,35 @@ ipcMain.on("logout-whatsapp", async () => {
       }
     }
 
-    // Thoroughly clean up auth data
-    const authDirectory = path.join(app.getPath("userData"), "baileys-auth");
-    if (fs.existsSync(authDirectory)) {
-      fs.rmSync(authDirectory, { recursive: true, force: true });
-      fs.mkdirSync(authDirectory, { recursive: true });
-      logToFileAndUI("Authentication data cleared");
-    }
+    // Clean up auth data using CleanupManager and FileUtils
+    const authPaths = [
+      { path: path.join(app.getPath("userData"), "baileys-auth"), description: "Authentication data" },
+      { path: userDataPath, description: "Legacy authentication data" },
+      { path: path.join(app.getPath("userData"), "session"), description: "Session data" },
+      { path: path.join(app.getPath("userData"), "auth_store"), description: "Auth store data" }
+    ];
 
-    // Also clear legacy auth paths
-    if (fs.existsSync(userDataPath)) {
-      fs.rmSync(userDataPath, { recursive: true, force: true });
-      logToFileAndUI("Legacy authentication data cleared");
-    }
+    CleanupManager.cleanupAuthData(authPaths, logToFileAndUI, FileUtils);
 
-    // Clear any session files
-    const sessionPath = path.join(app.getPath("userData"), "session");
-    if (fs.existsSync(sessionPath)) {
-      fs.rmSync(sessionPath, { recursive: true, force: true });
-      logToFileAndUI("Session data cleared");
-    }
+    // Clear store files
+    const storeFiles = [
+      { path: path.join(app.getPath("userData"), "baileys_store.json"), description: "Store file" }
+    ];
 
-    // Additional cleanup for any remaining auth keys or tokens
-    const authStorePath = path.join(app.getPath("userData"), "auth_store");
-    if (fs.existsSync(authStorePath)) {
-      fs.rmSync(authStorePath, { recursive: true, force: true });
-      logToFileAndUI("Auth store data cleared");
-    }
-
-    // Clear any possible Baileys store files to prevent cached data issues
-    const storeFile = path.join(app.getPath("userData"), "baileys_store.json");
-    if (fs.existsSync(storeFile)) {
-      fs.unlinkSync(storeFile);
-      logToFileAndUI("Store file cleared");
-    }
+    CleanupManager.cleanupFiles(storeFiles, logToFileAndUI, FileUtils);
 
     // Clean up any active transfers
     if (activeTransfers.size > 0) {
+      const count = activeTransfers.size;
       activeTransfers.clear();
-      logToFileAndUI(`Canceled ${activeTransfers.size} pending transfers`);
+      logToFileAndUI(`Canceled ${count} pending transfers`);
     }
 
-    // Force garbage collection if possible
-    if (global.gc) {
-      global.gc();
-      logToFileAndUI("Performed garbage collection");
-    }
+    // Run garbage collection
+    CleanupManager.runGarbageCollection(logToFileAndUI);
 
     // Notify renderer about disconnection
-    mainWindow.webContents.send("whatsapp-disconnected");
+    mainWindow.webContents.send(IPC_EVENTS.WHATSAPP_DISCONNECTED);
     logToFileAndUI("Logged out of WhatsApp");
   } catch (err) {
     logToFileAndUI(`Error during logout process: ${err.message}`, true);
@@ -1419,53 +1064,53 @@ ipcMain.on("logout-whatsapp", async () => {
 });
 
 // Check WhatsApp client connection status
-ipcMain.on("check-connection", async () => {
+ipcMain.on(IPC_EVENTS.CHECK_CONNECTION, async () => {
   try {
     if (!sock || !sock.user) {
       logToFileAndUI("WhatsApp client is not connected");
-      mainWindow.webContents.send("whatsapp-disconnected");
+      mainWindow.webContents.send(IPC_EVENTS.WHATSAPP_DISCONNECTED);
       return;
     }
 
     // In Baileys, if sock.user exists, we're connected
     if (sock.user.id) {
       logToFileAndUI(`WhatsApp connected as: ${sock.user.id}`);
-      mainWindow.webContents.send("whatsapp-ready");
+      mainWindow.webContents.send(IPC_EVENTS.WHATSAPP_READY);
     } else {
-      mainWindow.webContents.send("whatsapp-disconnected");
+      mainWindow.webContents.send(IPC_EVENTS.WHATSAPP_DISCONNECTED);
     }
   } catch (err) {
     logToFileAndUI(`Error checking connection: ${err.message}`, true);
-    mainWindow.webContents.send("whatsapp-disconnected");
+    mainWindow.webContents.send(IPC_EVENTS.WHATSAPP_DISCONNECTED);
 
     // Try to reconnect
     setTimeout(() => {
       initWhatsAppClient();
-    }, 5000);
+    }, TIMEOUTS.CONNECTION_RETRY_MS);
   }
 });
 
 // Manually retry sending a file
-ipcMain.on("retry-file", async (event, { filePath, chatId }) => {
+ipcMain.on(IPC_EVENTS.RETRY_FILE, async (event, { filePath, chatId }) => {
   logToFileAndUI(`Manually retrying file: ${filePath}`);
   processAndSendFile(filePath, chatId, 0);
 });
 
 // Cancel all pending transfers
-ipcMain.on("cancel-transfers", () => {
+ipcMain.on(IPC_EVENTS.CANCEL_TRANSFERS, () => {
   const count = activeTransfers.size;
   activeTransfers.clear();
   logToFileAndUI(`Canceled ${count} pending transfers`);
 });
 
 // Set max retries
-ipcMain.on("set-max-retries", (event, count) => {
+ipcMain.on(IPC_EVENTS.SET_MAX_RETRIES, (event, count) => {
   maxRetries = count;
   logToFileAndUI(`Maximum retry attempts set to: ${maxRetries}`);
 });
 
 // IPC handler for playing sounds
-ipcMain.on("play-sound", (event, soundName) => {
+ipcMain.on(IPC_EVENTS.PLAY_SOUND, (event, soundName) => {
   logToFileAndUI(`Renderer requested to play sound: ${soundName}`);
   playSound(soundName);
 });
